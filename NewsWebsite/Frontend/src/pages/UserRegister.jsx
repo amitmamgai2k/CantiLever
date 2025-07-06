@@ -105,12 +105,20 @@ function UserRegister() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Join Our News Platform</h2>
-          <p className="mt-2 text-gray-600">Stay updated with the latest news</p>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-md p-8 space-y-6">
+
+        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8 relative overflow-hidden shadow-2xl drop-shadow-xl hover:shadow-2xl transition-shadow duration-300 hover:scale-105 ">
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-100 rounded-full opacity-50 border-2 border-amber-200 z-[-1]"></div>
+           <div className="absolute -top-10 -left-10 w-40 h-40 bg-amber-100 rounded-full opacity-50 border-2 border-amber-200 z-[-1]"></div>
+        <div className="absolute -bottom-10 -left-10 w-28 h-28 bg-amber-100 rounded-full opacity-50 border-2 border-amber-200 z-[-1]"></div>
+           <div className="absolute -bottom-10 -right-10 w-28 h-28 bg-amber-100 rounded-full opacity-50 border-2 border-amber-200 z-[-1]  "></div>
+
+           <div className="text-center">
+
+          <h2 className="text-3xl font-bold text-gray-700 ">Join Our News Platform</h2>
+           <h2 className="text-3xl font-bold text-amber-600 ">Sandesh</h2>
+          <p className="mt-2 text-gray-600 mb-3 ">Stay updated with the latest news</p>
+        </div>
           {errors.general && (
             <div className="bg-red-50 border border-red-200 rounded-md p-3">
               <p className="text-red-600 text-sm">{errors.general}</p>
@@ -122,7 +130,7 @@ function UserRegister() {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-lg shadow-sm py-3 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mb-2"
           >
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -139,7 +147,7 @@ function UserRegister() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+              <span className="px-2 bg-white text-gray-500 mb-2">Or continue with email</span>
             </div>
           </div>
 
@@ -151,7 +159,7 @@ function UserRegister() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
+                  <User className="h-5 w-5 text-amber-600" />
                 </div>
                 <input
                   id="name"
@@ -174,7 +182,7 @@ function UserRegister() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-amber-600" />
                 </div>
                 <input
                   id="email"
@@ -197,7 +205,7 @@ function UserRegister() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Key className="h-5 w-5 text-gray-400" />
+                  <Key className="h-5 w-5 text-amber-600" />
                 </div>
                 <input
                   id="password"
@@ -220,7 +228,7 @@ function UserRegister() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Key className="h-5 w-5 text-gray-400" />
+                  <Key className="h-5 w-5 text-amber-600" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -240,8 +248,8 @@ function UserRegister() {
               type="submit"
               disabled={loading}
               className={`w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white ${
-                loading ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+                loading ? "bg-amber-400" : "bg-amber-600 hover:bg-amber-700"
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500`}
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
@@ -249,7 +257,7 @@ function UserRegister() {
 
           <p className="text-center text-gray-600 text-sm">
             Already have an account?{" "}
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/user/login" className="font-medium text-amber-600 hover:text-blue-500">
               Sign in here
             </Link>
           </p>
