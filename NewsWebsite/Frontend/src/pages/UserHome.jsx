@@ -162,7 +162,7 @@ function UserHome() {
   if (loading) {
     return (
       <div>
-        <NavBar />
+        <NavBar  />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <RefreshCw className="h-12 w-12 animate-spin text-amber-600 mx-auto mb-4" />
@@ -177,7 +177,7 @@ function UserHome() {
   if (error) {
     return (
       <div>
-        <NavBar />
+        <NavBar  />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center max-w-md mx-auto p-6">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
