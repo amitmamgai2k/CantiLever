@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import NavBar from '../Components/NavBar';
-import { Clock, Eye, ArrowRight, TrendingUp, Zap, Calendar, User, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
+import { Clock, Eye, ArrowRight, TrendingUp, Zap, Calendar, User, ExternalLink, RefreshCw, AlertCircle, Newspaper, NewspaperIcon } from 'lucide-react';
 import axios from 'axios';
 
 // NewsAPI configuration
@@ -19,9 +19,25 @@ function UserHome() {
   const [scienceNews, setScienceNews] = useState([]);
   const [politicsNews, setPoliticsNews] = useState([]);
   const [worldNews, setWorldNews] = useState([]);
+  const [category, setCategory] = useState('techNews');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const newsMap = {
+  breakingNews,
+  topHeadlines,
+  trendingNews,
+  techNews,
+  sportsNews,
+  businessNews,
+  entertainmentNews,
+  healthNews,
+  scienceNews,
+  politicsNews,
+  worldNews,
+};
+
+const selectedNews = newsMap[category] || [];
 
   // Fetch news from NewsAPI
   const fetchNews = async (endpoint, params = '') => {
@@ -159,6 +175,7 @@ function UserHome() {
     return `https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=600&fit=crop&q=80`;
   };
 
+
   if (loading) {
     return (
       <div>
@@ -262,9 +279,12 @@ function UserHome() {
                         <User className="h-4 w-4" />
                         <span className="text-sm">{topHeadlines[0].source.name}</span>
                       </div>
-                      <button className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-white/30 transition-all duration-200">
+                      <button className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-white/30 transition-all duration-200"
+                      onClick={checkLoginStatus}
+                      >
                         <span className="text-sm font-medium">Read More</span>
                         <ArrowRight className="h-4 w-4" />
+
                       </button>
                     </div>
                   </div>
@@ -370,32 +390,36 @@ function UserHome() {
               </div>
             </section>
 
-            {/* Technology News */}
-            {techNews.length > 0 && (
-              <section>
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Technology</h3>
-                  <div className="space-y-4">
-                    {techNews.slice(0, 3).map((article, index) => (
-                      <div
-                        key={index}
-                        className="group cursor-pointer border-b border-gray-100 last:border-b-0 pb-4 last:pb-0"
-                        onClick={() => window.open(article.url, '_blank')}
-                      >
-                        <h4 className="font-medium text-gray-900 mb-1 line-clamp-2 group-hover:text-amber-600 transition-colors duration-200">
-                          {truncateText(article.title, 70)}
-                        </h4>
-                        <div className="flex items-center space-x-2 text-gray-500 text-xs">
-                          <span>{article.source.name}</span>
-                          <span>•</span>
-                          <span>{formatDate(article.publishedAt)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
+            {/* Category News */}
+
+{selectedNews.length > 0 && (
+  <section>
+    <div className="bg-white rounded-xl shadow-xl p-6">
+    <div className="flex gap-2 ">
+       <Newspaper className="h-6 w-6 text-amber-600 mb-2" />
+        <h3 className="text-xl font-bold mb-4 capitalize  text-gray-900 ">{category.split('News')[0]} News</h3>
+    </div>
+      <div className="space-y-4">
+        {selectedNews.slice(0, 5).map((article, index) => (
+          <div
+            key={index}
+            className="group cursor-pointer border-b border-gray-300 last:border-b-0 pb-4 last:pb-0 hover:bg-gray-50 transition-colors duration-200 hover:scale-105  "
+            onClick={() => window.open(article.url, '_blank')}
+          >
+            <h4 className="font-medium text-gray-900 mb-1 line-clamp-2 group-hover:text-amber-600 transition-colors duration-200">
+              {truncateText(article.title, 70)}
+            </h4>
+            <div className="flex items-center space-x-2 text-gray-500 text-xs">
+              <span>{article.source.name}</span>
+              <span>•</span>
+              <span>{formatDate(article.publishedAt)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
 
 
             {/* Popular Categories */}
@@ -406,6 +430,10 @@ function UserHome() {
                   {['Technology', 'Sports', 'Health', 'Business', 'Entertainment', 'Science', 'Politics', 'World'].map((category) => (
                     <button
                       key={category}
+                      onClick={() => {
+                        setCategory(category.toLowerCase() + 'News');
+                        console.log(category.toLowerCase() + 'News');
+                      }}
                       className="w-full text-left px-3 py-2 rounded-lg text-gray-700 hover:bg-amber-50 hover:text-amber-600 transition-colors duration-200"
                     >
                       {category}

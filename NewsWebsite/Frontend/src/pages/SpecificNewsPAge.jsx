@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import NavBar from '../Components/NavBar';
-import { AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
+import { AlertCircle, RefreshCw, ExternalLink, Clock } from 'lucide-react';
 import axios from 'axios';
 
 function SpecificNewsPage() {
@@ -102,6 +102,17 @@ function SpecificNewsPage() {
                   />
                 </div>
                 <div className="p-6">
+                  <div className="flex  gap-2 ">
+                     <Clock className="h-4 w-4 text-gray-400 group-hover:text-amber-600 transition-colors" />
+                <span className="text-xs text-gray-500 mb-2">
+                  {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+                  </div>
+
                   <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">
                     {article.title}
                   </h3>
