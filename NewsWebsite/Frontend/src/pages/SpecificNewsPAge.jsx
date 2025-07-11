@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams,useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import NavBar from '../Components/NavBar';
 import { AlertCircle, RefreshCw, ExternalLink, Clock } from 'lucide-react';
 import axios from 'axios';
 
+
 function SpecificNewsPage() {
   const { id } = useParams();
+  const location = useLocation();
+  const currentUser = location.state?.user || null;
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,6 +39,14 @@ function SpecificNewsPage() {
 
     fetchNews();
   }, [id]);
+  const checkLoginStatus = (articleUrl) => {
+      if (!currentUser) {
+        toast.error('Please log in to read full articles');
+        navigate('/user/login');
+      } else {
+        window.open(articleUrl, '_blank');
+      }
+    };
 
   if (loading) {
     return (
@@ -89,7 +101,7 @@ function SpecificNewsPage() {
               <article
                 key={index}
                 className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer"
-                onClick={() => window.open(article.url, '_blank')}
+                onClick={() => checkLoginStatus(article.url)}
               >
                 <div className="aspect-video bg-gray-200 overflow-hidden">
                   <img
