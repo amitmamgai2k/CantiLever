@@ -73,7 +73,7 @@ function NavBar() {
                 key={link.name}
                 to={link.path}
                 className="text-gray-700 hover:text-amber-600 font-medium transition-colors duration-200 relative group"
-                state={currentUser ? { user: currentUser } : {}}
+
 
               >
                 {link.name}

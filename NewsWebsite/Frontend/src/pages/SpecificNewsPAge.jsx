@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { useParams,useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import NavBar from '../Components/NavBar';
 import { AlertCircle, RefreshCw, ExternalLink, Clock } from 'lucide-react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../helper/firebase';
 import axios from 'axios';
-
 
 function SpecificNewsPage() {
   const { id } = useParams();
-  const location = useLocation();
-  const currentUser = location.state?.user || null;
+
+  const navigate = useNavigate();
+
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+
 
   const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY;
   const NEWS_API_BASE_URL = import.meta.env.VITE_NEWS_API_BASE_URL || 'https://newsapi.org/v2';
@@ -47,6 +58,7 @@ function SpecificNewsPage() {
         window.open(articleUrl, '_blank');
       }
     };
+
 
   if (loading) {
     return (
