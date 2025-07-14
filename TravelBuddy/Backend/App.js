@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 import connectToDB from './src/db/db.js';
+import userRoutes from './src/routes/user.route.js';
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
   console.log('Request Received');
   res.send('Hello world');
 });
+app.use('/users', userRoutes);
 
 
 export default app;
