@@ -33,7 +33,9 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     await newUser.save();
 
-    throw new ApiResponse(201, { userId: newUser._id }, "User registered successfully");
+    return res.status(201).json(
+      new ApiResponse(201, { userId: newUser._id }, "User registered successfully")
+    );
 
   } catch (err) {
     throw new ApiError(500, "Server error", [err.message]);
@@ -60,7 +62,9 @@ export const loginUser = asyncHandler(async (req, res) => {
     user.isOnline = true;
     await user.save();
 
-    throw new ApiResponse(200, { token }, "Login successful");
+    return res.status(200).json(
+      new ApiResponse(200, { token, userId: user._id }, "User logged in successfully")
+    );
 
   } catch (err) {
     throw new ApiError(500, "Server error", [err.message]);
@@ -70,14 +74,111 @@ export const logoutUser = asyncHandler(async (req, res) => {
   try {
     const userId = req.user.userId;
     const user = await User.findById(userId);
+
     if (!user) throw new ApiError(404, "User not found");
 
     user.isOnline = false;
     user.socketId = null;
     await user.save();
 
-    throw new ApiResponse(200, {}, "Logout successful");
+    res.clearCookie('token');
+    return res.status(200).json(
+      new ApiResponse(200, null, "User logged out successfully")
+    );
   } catch (err) {
     throw new ApiError(500, "Server error", [err.message]);
   }
 });
+export const getUserProfile = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('-password');
+    if (!user) throw new ApiError(404, "User not found");
+  return res.status(200).json(
+      new ApiResponse(200, user, "User profile retrieved successfully")
+    );
+  } catch (err) {
+    throw new ApiError(500, "Server error", [err.message]);
+  }
+});
+
+export const updateUser = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const {
+      fullName,
+      password,
+      profilePicture,
+      phoneNumber,
+      bio,
+      currentLocation,
+      futureDestinations,
+      interests,
+      socialLinks,
+    } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) throw new ApiError(404, "User not found");
+    if(profilePicture){
+      const profilePictureLocalPath = req.file?.path;
+      if (profilePictureLocalPath) {
+        const profilePictureResponse = await uploadOnCloudinary(profilePictureLocalPath);
+        if (profilePictureResponse) {
+          profilePicture = profilePictureResponse.secure_url;
+        }
+    }
+  }
+
+
+    if (fullName !== undefined) user.fullName = fullName;
+    if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+
+    if (bio !== undefined) user.bio = bio;
+    if (futureDestinations !== undefined) user.futureDestinations = futureDestinations;
+    if (interests !== undefined) user.interests = interests;
+
+    if (currentLocation !== undefined) {
+
+
+      user.currentLocation = {
+        lat: currentLocation.lat ?? user.currentLocation?.lat,
+        lng: currentLocation.lng ?? user.currentLocation?.lng
+      };
+    }
+
+    if (socialLinks !== undefined) {
+      user.socialLinks = {
+        instagram: socialLinks.instagram ?? user.socialLinks?.instagram,
+        facebook: socialLinks.facebook ?? user.socialLinks?.facebook,
+        linkedin: socialLinks.linkedin ?? user.socialLinks?.linkedin
+      };
+    }
+
+    if (password !== undefined) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, user, "User updated successfully")
+    );
+  } catch (err) {
+    throw new ApiError(500, "Server error", [err.message]);
+  }
+});
+export const deleteUser = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) throw new ApiError(404, "User not found");
+    return res.status(200).json(
+      new ApiResponse(200, null, "User deleted successfully")
+    );
+  } catch (err) {
+    throw new ApiError(500, "Server error", [err.message]);
+  }
+});
+
+
