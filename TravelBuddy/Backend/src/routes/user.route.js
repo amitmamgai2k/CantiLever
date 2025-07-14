@@ -1,12 +1,21 @@
 import { Router } from "express";
-import { registerUser, loginUser } from "../controller/user.controller.js";
+import { registerUser, loginUser, logoutUser, getUserProfile, updateUser, deleteUser } from "../controller/user.controller.js";
 import { authUser } from "../middleware/auth.middleware.js";
 
 
 const router = Router();
-// Register route
+
 router.post('/register', registerUser);
-// Login route
+
 router.post('/login',authUser, loginUser);
+
+router.post('/logout', authUser, logoutUser);
+
+router.get('/profile', authUser, getUserProfile);
+
+router.put('/update', authUser, updateUser);
+
+router.delete('/delete', authUser, deleteUser);
+
 
 export default router;

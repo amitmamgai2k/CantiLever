@@ -6,6 +6,7 @@ import cors from 'cors';
 
 import connectToDB from './src/db/db.js';
 import userRoutes from './src/routes/user.route.js';
+import ActivityRoutes from './src/routes/activity.route.js';
 
 dotenv.config();
 const app = express();
@@ -28,6 +29,7 @@ app.get('/', (req, res) => {
   res.send('Hello world');
 });
 app.use('/users', userRoutes);
+app.use('/activities', ActivityRoutes);
 
 
 export default app;
