@@ -55,6 +55,14 @@ const UserSchema = new mongoose.Schema({
     facebook: String,
     linkedin: String
   },
+  isOnline: {
+    type: Boolean,
+    default: false
+  },
+  socketId: {
+    type: String,
+    default: null
+  },
 
   createdAt: {
     type: Date,
