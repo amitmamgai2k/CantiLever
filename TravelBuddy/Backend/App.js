@@ -7,6 +7,8 @@ import cors from 'cors';
 import connectToDB from './src/db/db.js';
 import userRoutes from './src/routes/user.route.js';
 import ActivityRoutes from './src/routes/activity.route.js';
+import MessageRoutes from './src/routes/message.route.js';
+
 
 dotenv.config();
 const app = express();
@@ -30,6 +32,7 @@ app.get('/', (req, res) => {
 });
 app.use('/users', userRoutes);
 app.use('/activities', ActivityRoutes);
+app.use('/messages', MessageRoutes);
 
 
 export default app;
