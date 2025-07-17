@@ -17,12 +17,8 @@ import {
 function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // dummy: replace with real user auth later
-  const currentUser = {
-    name: "John Doe",
-    photoURL: "https://i.pravatar.cc/40",
-    currentLocation: "India Delhi",
-  };
+
+  const currentUser = null;
 
   const notificationCount = 3;
   const messageCount = 2;
@@ -33,7 +29,7 @@ function NavBar() {
   };
 
   const handleLogout = () => {
-    // later: call logout API
+
     console.log("Logged out");
     handleNavigation('/login');
   };
@@ -43,7 +39,7 @@ function NavBar() {
     { name: 'Map', path: '/map', icon: MapPin },
     { name: 'Activities', path: '/activities', icon: Calendar },
     { name: 'Connections', path: '/connections', icon: Users },
-    { name: 'Messages', path: '/messages', icon: MessageCircle, badge: messageCount },
+
   ];
 
   return (
@@ -56,12 +52,12 @@ function NavBar() {
             onClick={() => handleNavigation('/')}
             className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
           >
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-lg">
+            <div className="bg-amber-600 p-2 rounded-lg">
               <Globe className="text-white" size={24} />
             </div>
             <div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                TravelConnect
+              <span className="text-xl font-bold bg-amber-600 bg-clip-text text-transparent">
+                TravelBuddy
               </span>
               <div className="text-xs text-gray-500 -mt-1">Find your travel buddy</div>
             </div>
@@ -96,7 +92,7 @@ function NavBar() {
 
             <button
               onClick={() => handleNavigation('/create-activity')}
-              className="flex items-center space-x-1 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="flex items-center space-x-1 bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-all duration-200 shadow-md hover:shadow-lg"
             >
               <Plus size={18} />
               <span className="hidden lg:inline text-center">Create</span>
@@ -145,7 +141,7 @@ function NavBar() {
                 </button>
                 <button
                   onClick={() => handleNavigation('/register')}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                  className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
                 >
                   Join Now
                 </button>
@@ -259,7 +255,7 @@ function NavBar() {
                     handleNavigation('/register');
                     setIsMenuOpen(false);
                   }}
-                  className="block px-3 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 font-medium text-center w-full"
+                  className="block px-3 py-30 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-200 font-medium text-center w-full"
                 >
                   Join TravelConnect
                 </button>
