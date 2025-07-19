@@ -13,9 +13,12 @@ import {
   Globe,
   Heart
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const navigate = useNavigate();
 
 
   const currentUser = null;
@@ -23,9 +26,14 @@ function NavBar() {
   const notificationCount = 3;
   const messageCount = 2;
 
+  const handleLogin = (path) => {
+    navigate(path);
+  };
+  const handleRegister = (path) => {
+    navigate(path);
+  };
   const handleNavigation = (path) => {
-    console.log(`Navigating to: ${path}`);
-
+    navigate(path);
   };
 
   const handleLogout = () => {
@@ -134,14 +142,14 @@ function NavBar() {
             ) : (
               <div className="flex items-center space-x-3">
                 <button
-                  onClick={() => handleNavigation('/login')}
+                  onClick={() => handleLogin('/login')}
                   className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => handleNavigation('/register')}
-                  className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                  onClick={() => handleRegister('/register')}
+                  className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
                 >
                   Join Now
                 </button>
@@ -243,7 +251,7 @@ function NavBar() {
               <div className="space-y-2 mt-4 pt-4 border-t border-gray-100 mx-3">
                 <button
                   onClick={() => {
-                    handleNavigation('/login');
+                    handleLogin('/login');
                     setIsMenuOpen(false);
                   }}
                   className="block px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium w-full text-left"
@@ -252,7 +260,7 @@ function NavBar() {
                 </button>
                 <button
                   onClick={() => {
-                    handleNavigation('/register');
+                    handleRegister('/register');
                     setIsMenuOpen(false);
                   }}
                   className="block px-3 py-30 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-200 font-medium text-center w-full"
