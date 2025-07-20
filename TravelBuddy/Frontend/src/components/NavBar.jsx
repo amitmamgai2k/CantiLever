@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect, use } from 'react';
 import {
   Menu,
   X,
@@ -14,17 +14,28 @@ import {
   Heart
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch,useSelector } from 'react-redux';
+import { loadUser } from '../redux/slices/userAuthSlice';
+import { logout } from '../redux/slices/userAuthSlice';
+import toast from 'react-hot-toast';
+
 
 function NavBar() {
+
+
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+
   const navigate = useNavigate();
+   const dispatch = useDispatch();
 
 
-  const currentUser = null;
+  const currentUser = useSelector((state) => state.userAuth.user);
 
   const notificationCount = 3;
   const messageCount = 2;
+
 
   const handleLogin = (path) => {
     navigate(path);
@@ -37,9 +48,11 @@ function NavBar() {
   };
 
   const handleLogout = () => {
+    dispatch(logout());
+   toast.success('Logout successful');
 
-    console.log("Logged out");
-    handleNavigation('/login');
+
+
   };
 
   const navLinks = [

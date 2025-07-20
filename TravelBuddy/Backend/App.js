@@ -3,6 +3,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser'
 
 import connectToDB from './src/db/db.js';
 import userRoutes from './src/routes/user.route.js';
@@ -15,10 +16,11 @@ const app = express();
 connectToDB();
 
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: 'http://localhost:5173',
+  credentials: true
 }));
+
+app.use(cookieParser());
 
 
 

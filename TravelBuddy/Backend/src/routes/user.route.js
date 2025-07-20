@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser, getUserProfile, updateUser, deleteUser } from "../controller/user.controller.js";
+import { registerUser, loginUser, logoutUser, getUserProfile, updateUser, deleteUser, getCurrentUser } from "../controller/user.controller.js";
 import { authUser } from "../middleware/auth.middleware.js";
 
 
@@ -7,7 +7,8 @@ const router = Router();
 
 router.post('/register', registerUser);
 
-router.post('/login',authUser, loginUser);
+router.post('/login', loginUser);
+router.get('/me', authUser, getCurrentUser);
 
 router.post('/logout', authUser, logoutUser);
 

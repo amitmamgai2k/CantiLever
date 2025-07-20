@@ -8,87 +8,93 @@ import ApiResponse from '../utils/ApiResponse.js';
 
 
 export const registerUser = asyncHandler(async (req, res) => {
-  try {
-    const { fullName, email, password } = req.body;
-    if (!fullName || !email || !password) {
-      throw new ApiError(400, "Full name, email, and password are required");
+  const { fullName, email, password,mobile } = req.body;
 
-    }
-
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new ApiError(400, "User with this email already exists");
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
-    const newUser = new User({
-      fullName,
-      email,
-      password: hashedPassword
-    });
-
-    await newUser.save();
-
-    return res.status(201).json(
-      new ApiResponse(201, { userId: newUser._id }, "User registered successfully")
-    );
-
-  } catch (err) {
-    throw new ApiError(500, "Server error", [err.message]);
+  if (!fullName || !email || !password || !mobile) {
+    throw new ApiError(400, "Full name, email, and password are required");
   }
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new ApiError(400, "User with this email already exists");
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const newUser = new User({
+    fullName,
+    email,
+    password: hashedPassword,
+    mobile
+  });
+
+  await newUser.save();
+
+  return res.status(201).json(
+    new ApiResponse(201, { userId: newUser._id }, "User registered successfully")
+  );
 });
+
 
 
 export const loginUser = asyncHandler(async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
+  const { email, password } = req.body;
+  if (!email || !password) {
     throw new ApiError(400, "Email and password are required");
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) throw new ApiError(404, "User not found");
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) throw new ApiError(401, "Invalid credentials");
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    });
-    user.isOnline = true;
-    await user.save();
-
-    return res.status(200).json(
-      new ApiResponse(200, { token, userId: user._id }, "User logged in successfully")
-    );
-
-  } catch (err) {
-    throw new ApiError(500, "Server error", [err.message]);
   }
+
+  const user = await User.findOne({ email });
+  if (!user) throw new ApiError(404, "User not found");
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new ApiError(401, "Invalid credentials");
+
+  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  });
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  user.isOnline = true;
+  await user.save();
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email
+      }
+    }, "User logged in successfully")
+  );
 });
+
 export const logoutUser = asyncHandler(async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const user = await User.findById(userId);
 
-    if (!user) throw new ApiError(404, "User not found");
 
-    user.isOnline = false;
-    user.socketId = null;
-    await user.save();
 
-    res.clearCookie('token');
-    return res.status(200).json(
-      new ApiResponse(200, null, "User logged out successfully")
-    );
-  } catch (err) {
-    throw new ApiError(500, "Server error", [err.message]);
-  }
+  const user = await User.findById(req.user._id);
+  user.isOnline = false;
+  await user.save();
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  return res.status(200).json(new ApiResponse(200, null, "Logged out successfully"));
 });
+export const getCurrentUser = asyncHandler(async (req, res) => {
+  return res.status(200).json(
+    new ApiResponse(200, { user: req.user }, "User fetched successfully")
+  );
+});
+
+
 export const getUserProfile = asyncHandler(async (req, res) => {
   try {
     const userId = req.user.userId;
