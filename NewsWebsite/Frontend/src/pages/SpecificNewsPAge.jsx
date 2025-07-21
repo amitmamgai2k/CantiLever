@@ -9,21 +9,21 @@ import axios from 'axios';
 
 function SpecificNewsPage() {
   const { id } = useParams();
-
   const navigate = useNavigate();
 
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const articlesPerPage = 12;
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
     });
     return () => unsubscribe();
   }, []);
-
-
 
   const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY;
   const NEWS_API_BASE_URL = import.meta.env.VITE_NEWS_API_BASE_URL || 'https://newsapi.org/v2';
@@ -32,9 +32,8 @@ function SpecificNewsPage() {
     const fetchNews = async () => {
       try {
         const response = await axios.get(
-          `${NEWS_API_BASE_URL}/everything?apiKey=${NEWS_API_KEY}&q=${id}&sortBy=publishedAt&pageSize=20&language=en`
+          `${NEWS_API_BASE_URL}/everything?apiKey=${NEWS_API_KEY}&q=${id}&sortBy=publishedAt&pageSize=100&language=en`
         );
-
         if (response.data.status === 'error') throw new Error(response.data.message);
 
         const validArticles = response.data.articles.filter(article =>
@@ -50,15 +49,29 @@ function SpecificNewsPage() {
 
     fetchNews();
   }, [id]);
-  const checkLoginStatus = (articleUrl) => {
-      if (!currentUser) {
-        toast.error('Please log in to read full articles');
-        navigate('/user/login');
-      } else {
-        window.open(articleUrl, '_blank');
-      }
-    };
 
+  const checkLoginStatus = (articleUrl) => {
+    if (!currentUser) {
+      toast.error('Please log in to read full articles');
+      navigate('/user/login');
+    } else {
+      window.open(articleUrl, '_blank');
+    }
+  };
+
+  // Pagination calculations
+  const indexOfLastArticle = currentPage * articlesPerPage;
+  const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
+  const currentArticles = articles.slice(indexOfFirstArticle, indexOfLastArticle);
+  const totalPages = Math.ceil(articles.length / articlesPerPage);
+
+  const goToNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const goToPreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
 
   if (loading) {
     return (
@@ -108,51 +121,73 @@ function SpecificNewsPage() {
             <p className="text-gray-600">No articles found for "{id}"</p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {articles.map((article, index) => (
-              <article
-                key={index}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer"
-                onClick={() => checkLoginStatus(article.url)}
-              >
-                <div className="aspect-video bg-gray-200 overflow-hidden">
-                  <img
-                    src={article.urlToImage}
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      e.target.src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=600&fit=crop&q=80';
-                    }}
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="flex  gap-2 ">
-                     <Clock className="h-4 w-4 text-gray-400 group-hover:text-amber-600 transition-colors" />
-                <span className="text-xs text-gray-500 mb-2">
-                  {new Date(article.publishedAt).toLocaleDateString('en-US', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </span>
+          <>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {currentArticles.map((article, index) => (
+                <article
+                  key={index}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer"
+                  onClick={() => checkLoginStatus(article.url)}
+                >
+                  <div className="aspect-video bg-gray-200 overflow-hidden">
+                    <img
+                      src={article.urlToImage}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=600&fit=crop&q=80';
+                      }}
+                    />
                   </div>
+                  <div className="p-6">
+                    <div className="flex gap-2">
+                      <Clock className="h-4 w-4 text-gray-400 group-hover:text-amber-600 transition-colors" />
+                      <span className="text-xs text-gray-500 mb-2">
+                        {new Date(article.publishedAt).toLocaleDateString('en-US', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </span>
+                    </div>
 
-                  <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {article.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-amber-600 font-medium">
-                      {article.source.name}
-                    </span>
-                    <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-amber-600 transition-colors" />
+                    <h3 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-amber-600 transition-colors">
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                      {article.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-amber-600 font-medium">
+                        {article.source.name}
+                      </span>
+                      <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-amber-600 transition-colors" />
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <button
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+              >
+                Prev
+              </button>
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

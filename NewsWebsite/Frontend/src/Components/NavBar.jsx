@@ -18,6 +18,11 @@ function NavBar() {
     return () => unsubscribe();
   }, []);
 
+  console.log(currentUser);
+  const photoURL = currentUser?.photoURL;
+  console.log('Photo URL:', photoURL);
+
+
 
   const handleLogout = async () => {
     try {
@@ -122,7 +127,7 @@ function NavBar() {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-3 bg-gray-50 rounded-full px-4 py-2">
                   <div className="bg-amber-100 p-1 rounded-full">
-                 <img src={currentUser?.photoURL} alt="" className='w-8 h-8 rounded-full'/>
+                 <img src={photoURL|| 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740'} alt="" className='w-8 h-8 rounded-full'/>
                   </div>
                   <span className="text-sm font-medium text-gray-700">
                     {currentUser.displayName || currentUser.email?.split('@')[0]}
@@ -202,7 +207,7 @@ function NavBar() {
                 <div className="px-4 py-2 space-y-3 border-t border-gray-100 mt-4">
                   <div className="flex items-center space-x-3 bg-gray-50 rounded-lg px-4 py-3">
                     <div className="bg-amber-100 p-1.5 rounded-full">
-                        <img src={currentUser?.photoURL} alt="" className='w-8 h-8 rounded-full' />
+                        <img src={photoURL || 'https://img.freepik.com/free-vector/blue-circle-with-white-user_78370-4707.jpg?semt=ais_hybrid&w=740'} alt="" className='w-8 h-8 rounded-full' />
                     </div>
                     <span className="text-sm font-medium text-gray-700">
                       {currentUser.displayName || currentUser.email}
