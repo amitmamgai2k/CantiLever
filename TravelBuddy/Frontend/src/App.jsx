@@ -4,6 +4,7 @@ import UserLogin from './pages/userPages/userLogin';
 import UserRegister from './pages/userPages/userRegister';
 import Layout from './Components/Layout';
 import { Routes, Route } from 'react-router-dom';
+import CurrentLocation from './pages/userPages/CurrentLocation';
 
 import HomePage from './pages/HomePage';
 
@@ -14,12 +15,18 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Layout />} >
         <Route index element={<HomePage />} />
+
         <Route index element={
           <PrivateRoute>
             <HomePage/>
+
           </PrivateRoute>
-        } />
+
+        }
+
+        />
       </Route>
+        <Route path="/current-location" element={<CurrentLocation />} />
       <Route path="/login" element={<UserLogin />} />
       <Route path="/register" element={<UserRegister />} />
     </Routes>

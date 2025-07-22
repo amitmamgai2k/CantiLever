@@ -1,21 +1,19 @@
-import React, { useState,useEffect, use } from 'react';
+import  { useState, } from 'react';
 import {
   Menu,
   X,
   Users,
   MapPin,
   Compass,
-  User,
-  MessageCircle,
   Calendar,
   Plus,
   Bell,
   Globe,
-  Heart
+
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch,useSelector } from 'react-redux';
-import { loadUser } from '../redux/slices/userAuthSlice';
+
 import { logout } from '../redux/slices/userAuthSlice';
 import toast from 'react-hot-toast';
 
@@ -138,7 +136,7 @@ function NavBar() {
                     className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
                   >
                     <img
-                      src={currentUser.photoURL}
+                      src={currentUser.photoURL ||'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'}
                       alt={currentUser.name}
                       className="w-8 h-8 rounded-full border-2 border-gray-200 hover:border-blue-400 transition-colors"
                     />

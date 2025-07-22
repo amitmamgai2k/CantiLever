@@ -93,6 +93,31 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
     new ApiResponse(200, { user: req.user }, "User fetched successfully")
   );
 });
+export const updateUserLocation = asyncHandler(async (req, res) => {
+
+    const userId = req.user._id;
+    console.log(userId);
+
+    const { lat, lng } = req.body;
+    const user = await User.findById(userId);
+    if (!user) throw new ApiError(404, "User not found");
+    user.currentLocation.lat = lat;
+    user.currentLocation.lng = lng;
+    console.log('User location updated successfully');
+    await user.save();
+    return res.status(200).json(
+      new ApiResponse(200, user, "User location updated successfully")
+
+    );
+
+
+
+
+
+
+
+
+});
 
 
 export const getUserProfile = asyncHandler(async (req, res) => {

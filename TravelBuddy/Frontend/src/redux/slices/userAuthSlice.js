@@ -55,6 +55,17 @@ export const logout = createAsyncThunk(
     }
   }
 );
+export const currentLocation = createAsyncThunk(
+  'user/currentLocation',
+  async ({ lat, lng }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post('/users/current-location', { lat, lng });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
 
 
 const UserAuth = createSlice({
@@ -120,7 +131,20 @@ const UserAuth = createSlice({
 .addCase(logout.rejected, (state, action) => {
   state.loading = false;
   state.error = action.payload?.message || "Logout failed";
-});
+})
+.addCase(currentLocation.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(currentLocation.fulfilled, (state, action) => {
+  state.loading = false;
+  toast.success('Location updated successfully');
+  state.user = action.payload.data.user;
+})
+.addCase(currentLocation.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload?.message || "Current Location failed";
+})
 
   }
 });

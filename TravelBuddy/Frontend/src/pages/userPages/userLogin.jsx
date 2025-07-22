@@ -65,7 +65,7 @@ function UserLogin() {
 
       if (Login.fulfilled.match(loginResult)) {
         toast.success('Login successful!');
-        navigate('/');
+        navigate('/current-location');
       } else {
         const errorMessage = loginResult.payload?.message || "Invalid email or password. Please try again.";
         setErrors({ general: errorMessage });
