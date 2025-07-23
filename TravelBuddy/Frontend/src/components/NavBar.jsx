@@ -1,4 +1,4 @@
-import  { useState, } from 'react';
+import  { useState,useEffect } from 'react';
 import {
   Menu,
   X,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch,useSelector } from 'react-redux';
+import ReverseGeocode from './ReverseGeoCode';
 
 import { logout } from '../redux/slices/userAuthSlice';
 import toast from 'react-hot-toast';
@@ -29,10 +30,15 @@ function NavBar() {
    const dispatch = useDispatch();
 
 
+
+
   const currentUser = useSelector((state) => state.userAuth.user);
+  console.log('Current User:', currentUser);
+
 
   const notificationCount = 3;
   const messageCount = 2;
+
 
 
   const handleLogin = (path) => {
@@ -85,8 +91,8 @@ function NavBar() {
 
           {currentUser && (
             <div className="hidden lg:flex items-center space-x-1 text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
-              <MapPin size={14} className="text-blue-500" />
-              <span>{currentUser.currentLocation}</span>
+              <MapPin size={24} className="text-amber-600" />
+             <ReverseGeocode lat = {currentUser.currentLocation.lat} lng = {currentUser.currentLocation.lng}/>
             </div>
           )}
 
@@ -184,7 +190,7 @@ function NavBar() {
             {currentUser && (
               <div className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg mx-3 mb-3">
                 <MapPin size={14} className="text-blue-500" />
-                <span>{currentUser.currentLocation}</span>
+               <ReverseGeocode lat = {currentUser.currentLocation.lat} lng = {currentUser.currentLocation.lng}/>
               </div>
             )}
 
