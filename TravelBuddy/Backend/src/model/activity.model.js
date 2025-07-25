@@ -5,42 +5,57 @@ const activitySchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     },
     description: {
       type: String,
-      required: true,
+      required: true
     },
     date: {
       type: String,
-      required: true,
+      required: true
     },
-    time:{
+    time: {
       type: String,
-      required: true,
+      required: true
     },
+
     location: {
-      type:String,
-      required: true,
+      type: {
+        type: String,
+        enum: ['Point'],
+        required: true
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true
+      },
+      formattedAddress: {
+        type: String,
+        required: true
+      }
     },
+
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+      required: true
     },
     participantLimit: {
       type: Number,
-      default: 10,
+      default: 10
     },
     participants: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
+        ref: 'User'
+      }
+    ]
   },
   { timestamps: true }
 );
+activitySchema.index({ location: '2dsphere' });
+
 const Activity = mongoose.model('Activity', activitySchema);
 
 export default Activity;

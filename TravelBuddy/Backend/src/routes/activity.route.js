@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createActivity, listActivities,joinActivity,leaveActivity,deleteActivity,updateActivity,getSingleActivity ,getNearbyActivities} from "../controller/activity.controller.js";
+import { createActivity, nearbyActivities,joinActivity,leaveActivity,deleteActivity,updateActivity,getSingleActivity ,getNearbyActivities} from "../controller/activity.controller.js";
 import { authUser } from "../middleware/auth.middleware.js";
 
 
@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/create-activity', authUser, createActivity);
 
-router.get('/list-activities', authUser, listActivities);
+router.post('/get-nearby-activities', authUser, nearbyActivities);
 
 router.post('/join-activity/:id', authUser, joinActivity);
 

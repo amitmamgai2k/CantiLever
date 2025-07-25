@@ -14,7 +14,9 @@ function CreateActivity() {
     description: '',
     date: '',
     address: '',
-    participantLimit: 10
+    participantLimit: 10,
+    lat: 0,
+    lng: 0
   });
 
   const handleInputChange = (e) => {
@@ -32,13 +34,16 @@ function CreateActivity() {
       description: formData.description,
       date: formData.date,
       location: formData.address,
-      participantLimit: formData.participantLimit
+      participantLimit: formData.participantLimit,
+      lat: formData.lat,
+      lng: formData.lng
     }));
     setFormData({
       title: '',
       description: '',
       date: '',
       address: '',
+
       participantLimit: 10
     });
 
@@ -53,10 +58,14 @@ function CreateActivity() {
    const onPlaceChanged = () => {
   if (autocompleteRef.current !== null) {
     const place = autocompleteRef.current.getPlace();
-
+    console.log('Place changed:', place);
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
     setFormData(prev => ({
       ...prev,
-      address: place.formatted_address || place.name || ''
+      address: place.formatted_address || place.name || '',
+      lat: lat,
+      lng: lng
     }));
   } else {
     console.log('Autocomplete is not loaded yet!');

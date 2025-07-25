@@ -11,6 +11,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import AllTravelersOnMap from './components/AllTravelersOnMap';
 import CreateActivity from './pages/userPages/CreateActivity';
+import ActivityNearMe from './pages/userPages/ActivityNearMe';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ export default function App() {
         <Route index element={<HomePage />} />
           <Route path="/map" element={<AllTravelersOnMap />} />
           <Route path = "/create-activity" element={<CreateActivity />} />
+          <Route path = "/activity-near-me" element={<ActivityNearMe />} />
 
         <Route index element={
           <PrivateRoute>

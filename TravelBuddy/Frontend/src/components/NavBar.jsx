@@ -62,7 +62,7 @@ function NavBar() {
   const navLinks = [
     { name: 'Discover', path: '/', icon: Compass },
     { name: 'Map', path: '/map', icon: MapPin },
-    { name: 'Activities', path: '/activities', icon: Calendar },
+    { name: 'Activities', path: '/activity-near-me', icon: Calendar },
     { name: 'Connections', path: '/connections', icon: Users },
 
   ];
