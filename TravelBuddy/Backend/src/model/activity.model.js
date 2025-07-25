@@ -12,23 +12,16 @@ const activitySchema = new mongoose.Schema(
       required: true,
     },
     date: {
-      type: Date,
+      type: String,
+      required: true,
+    },
+    time:{
+      type: String,
       required: true,
     },
     location: {
-      type: {
-        type: String,
-        enum: ['Point'],
-        default: 'Point',
-      },
-      coordinates: {
-        type: [Number],
-        required: true,
-      },
-      address: {
-        type: String,
-        required: true,
-      },
+      type:String,
+      required: true,
     },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
@@ -48,9 +41,6 @@ const activitySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-activitySchema.index({ location: '2dsphere' });
-
 const Activity = mongoose.model('Activity', activitySchema);
 
 export default Activity;

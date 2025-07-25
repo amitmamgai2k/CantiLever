@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
   res.send('Hello world');
 });
 app.use('/users', userRoutes);
-app.use('/activities', ActivityRoutes);
+app.use('/activity', ActivityRoutes);
 app.use('/messages', MessageRoutes);
 
 

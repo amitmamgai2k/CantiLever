@@ -4,26 +4,31 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 
 export const createActivity = asyncHandler(async (req, res) => {
-    try {
-        const {userId} = req.user;
+
+
         const{title, description, date, location,participantsLimit} = req.body;
         if(!title || !description || !date || !location){
             throw new ApiError(400, "All fields are required");
         }
+
+
+        const[datePart, timePart] = date.split('T');
         const activity = await Activity.create({
             title,
             description,
-            date,
+            date: datePart,
+            time: timePart,
             location,
             participantsLimit,
-            creator:userId
+            creator:req.user._id
         });
-        return res.status(201).json(
-            new ApiResponse(201, activity, "Activity created successfully")
-        );
-    } catch (err) {
-        throw new ApiError(500, "Server error", [err.message]);
-    }
+        res.json(new ApiResponse(200, activity, 'Activity created successfully'));
+
+
+
+
+
+
 });
 export const listActivities = asyncHandler(async (req, res, next) => {
   const activities = await Activity.find().populate('creator', 'fullName');

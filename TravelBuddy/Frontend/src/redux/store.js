@@ -1,11 +1,14 @@
 
 import { configureStore } from '@reduxjs/toolkit'
 import UserAuth from './slices/userAuthSlice.js';
+import UserActivity from './slices/userActivitySlice.js';
 
 
 const store = configureStore({
     reducer: {
-        userAuth: UserAuth
+        userAuth: UserAuth,
+        userActivity: UserActivity
+
 
     },
     devTools: true

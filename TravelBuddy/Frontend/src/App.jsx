@@ -10,6 +10,7 @@ import { loadUser } from './redux/slices/userAuthSlice';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import AllTravelersOnMap from './components/AllTravelersOnMap';
+import CreateActivity from './pages/userPages/CreateActivity';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/" element={<Layout />} >
         <Route index element={<HomePage />} />
           <Route path="/map" element={<AllTravelersOnMap />} />
+          <Route path = "/create-activity" element={<CreateActivity />} />
 
         <Route index element={
           <PrivateRoute>
