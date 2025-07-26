@@ -7,7 +7,8 @@ const initialState = {
   loading: false,
   error: null,
   createdActivity: null,
-  activities: []
+  activities: [],
+  singleActivity: null
 };
 
 // Create new activity
@@ -31,6 +32,32 @@ export const getNearbyActivities = createAsyncThunk(
   async ({ lat, lng }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post('/activity/get-nearby-activities', { lat, lng });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
+export const joinActivity = createAsyncThunk(
+  'user/joinActivity',
+  async (activityId , { rejectWithValue }) => {
+    try {
+      console.log('activityId:', activityId);
+
+
+
+      const response = await axiosInstance.post(`/activity/join-activity/${activityId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
+export const getSingleActivity = createAsyncThunk(
+  'user/getSingleActivity',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/activity/single-activity/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: "Something went wrong" });
@@ -71,6 +98,36 @@ const UserActivity = createSlice({
         state.activities = action.payload?.data || [];
       })
       .addCase(getNearbyActivities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      })
+
+      // Join Activity
+      .addCase(joinActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(joinActivity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        toast.success('Joined activity successfully');
+      })
+      .addCase(joinActivity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      })
+
+      // Get Single Activity
+      .addCase(getSingleActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getSingleActivity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.singleActivity = action.payload?.data || null;
+      })
+      .addCase(getSingleActivity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
       });

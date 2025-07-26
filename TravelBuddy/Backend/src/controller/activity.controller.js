@@ -1,4 +1,5 @@
 import Activity from "../model/activity.model.js";
+import User from "../model/user.model.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
@@ -54,8 +55,10 @@ export const nearbyActivities = asyncHandler(async (req, res) => {
 
 
 export const joinActivity = asyncHandler(async (req, res, next) => {
-  try {
+
     const activityId = req.params.id;
+    console.log('Activity ID:', activityId);
+
 
   const activity = await Activity.findById(activityId);
   if (!activity) {
@@ -69,13 +72,15 @@ export const joinActivity = asyncHandler(async (req, res, next) => {
   }
 
   activity.participants.push(req.user._id);
+  User.JoinActivity.push(activityId);
+
   await activity.save();
 
   res.json(new ApiResponse(200, activity, 'Successfully joined activity'));
-  } catch (error) {
-    throw new ApiError(500, "Server error", [error.message]);
 
-  }
+
+
+
 });
 export const leaveActivity = asyncHandler(async (req, res, next) => {
     try {
@@ -140,7 +145,7 @@ export const updateActivity = asyncHandler(async (req, res, next) => {
 export const getSingleActivity = asyncHandler(async (req, res, next) => {
     try {
         const activityId = req.params.id;
-        const activity = await Activity.findById(activityId).populate('creator', 'fullName');
+        const activity = await Activity.findById(activityId).populate('creator', { fullName: 1 , profilePicture: 1});
         if (!activity) {
             return next(new ApiError(404, 'Activity not found'));
         }

@@ -1,12 +1,13 @@
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getNearbyActivities } from "../../redux/slices/userActivitySlice";
-import { Loader2, MapPin, Users, Calendar, Search, Filter, Star, Clock, Zap } from "lucide-react";
-
+import { Loader2, MapPin, Users, Calendar, Search, Star, Clock, Zap } from "lucide-react";
 
 function ActivityNearMe() {
   const currentUser = useSelector((state) => state.userAuth.user);
   const { activities } = useSelector((state) => state.userActivity);
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
@@ -29,6 +30,7 @@ function ActivityNearMe() {
 }, [dispatch, currentUser]);
 
 
+
   // Filter activities by search query
   const filteredActivities = activities.filter((activity) =>
     activity.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,6 +51,9 @@ function ActivityNearMe() {
       return { type: 'available', text: `${spotsLeft} spots available`, spotsLeft };
     }
   };
+
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100">
@@ -151,21 +156,23 @@ function ActivityNearMe() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12 ">
               {filteredActivities.map((activity, index) => {
                 const status = getActivityStatus(activity);
 
                 return (
                   <div
                     key={activity._id}
-                    className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-amber-200"
+                    className="group bg-gray-50 rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transform  transition-all duration-300 overflow-hidden border border-gray-100 hover:border-amber-200"
                     style={{ animationDelay: `${index * 100}ms` }}
+                    onClick={()=>navigate(`/activity/${activity._id}`)}
                   >
                     {/* Card Header */}
                     <div className="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-white relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -translate-y-16 translate-x-16"></div>
                       <div className="relative z-10">
                         <div className="flex items-start justify-between mb-2">
+
                           <h3 className="text-xl font-bold line-clamp-2 flex-1 mr-3">{activity.title}</h3>
                           <div className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
                             status.type === 'full'
@@ -184,7 +191,7 @@ function ActivityNearMe() {
                           </span>
                           <span className="flex items-center text-sm">
                             <Users className="w-4 h-4 mr-1" />
-                            {activity.currentParticipants || 0}/{activity.participantLimit}
+                            {activity?.participants.length}/{activity.participantLimit}
                           </span>
                         </div>
                       </div>
@@ -254,8 +261,11 @@ function ActivityNearMe() {
                               status.type === 'limited'
                                 ? 'bg-yellow-600 hover:bg-yellow-700'
                                 : 'bg-amber-600 hover:bg-amber-700'
-                            }`}>
+                            }`}
+                            onClick = {()=>navigate(`/activity/${activity._id}`)}
+                            >
                               {status.type === 'limited' ? 'Join Quick!' : 'Join Activity'}
+
                             </button>
                           )}
                         </div>

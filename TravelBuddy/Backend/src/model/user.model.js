@@ -16,7 +16,6 @@ const UserSchema = new mongoose.Schema({
     unique: true,
   },
 
-
   password: {
     type: String,
     required: true
@@ -67,6 +66,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  JoinActivity: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Activity'
+    }
+  ],
 
   createdAt: {
     type: Date,
