@@ -45,7 +45,8 @@ export const nearbyActivities = asyncHandler(async (req, res) => {
         },
         $maxDistance: 100000000000
       }
-    }
+    },
+     creator: { $ne: req.user._id }
   })
   .populate('creator');  ;
 
@@ -61,8 +62,12 @@ export const joinActivity = asyncHandler(async (req, res, next) => {
 
 
   const activity = await Activity.findById(activityId);
+  const user = await User.findById(req.user._id);
   if (!activity) {
     return next(new ApiError(404, 'Activity not found'));
+  }
+  if(activity.creator.toString() === req.user._id){
+    return next(new ApiError(400, 'You cannot join your own activity'));
   }
   if (activity.participants.includes(req.user._id)) {
     return next(new ApiError(400, 'You have already joined this activity'));
@@ -72,8 +77,8 @@ export const joinActivity = asyncHandler(async (req, res, next) => {
   }
 
   activity.participants.push(req.user._id);
-  User.JoinActivity.push(activityId);
-
+  user.JoinActivity.push(activityId);
+   await user.save();
   await activity.save();
 
   res.json(new ApiResponse(200, activity, 'Successfully joined activity'));

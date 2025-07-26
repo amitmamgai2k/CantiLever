@@ -14,9 +14,9 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Full name, email, and password are required");
   }
 
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email, mobile });
   if (existingUser) {
-    throw new ApiError(400, "User with this email already exists");
+    throw new ApiError(400, "User with this email or mobile already exists");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
