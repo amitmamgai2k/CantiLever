@@ -67,6 +67,17 @@ export const currentLocation = createAsyncThunk(
   }
 );
 
+export const updateUserProfile = createAsyncThunk(
+  'user/updateUserProfile',
+  async (user, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.put('/users/update-profile', user);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
 
 const UserAuth = createSlice({
   name: "UserAuth",

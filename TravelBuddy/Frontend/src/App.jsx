@@ -17,6 +17,7 @@ import JoinedActivites from './pages/Activity/JoinedActivites';
 import MyCreatedActivites from './pages/Activity/MyCreatedActivites';
 import UserProfile from './pages/userPages/UserProfile';
 import MyConnections from './pages/userPages/MyConnections';
+import UpdateProfile from './pages/userPages/UpdateProfile';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -38,6 +39,7 @@ export default function App() {
           <Route path = "/created-activities" element={<MyCreatedActivites />} />
           <Route path = "/profile" element={<UserProfile />} />
           <Route path = "/connections" element={<MyConnections />} />
+          <Route path = "/update-profile" element={<UpdateProfile />} />
 
 
         <Route index element={

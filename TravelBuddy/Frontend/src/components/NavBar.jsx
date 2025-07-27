@@ -84,6 +84,7 @@ function NavBar() {
     { name: 'My Activities', path: '/created-activities', icon: Calendar },
     { name: 'Connections', path: '/connections', icon: Link },
     { name: 'Notifications', path: '/notifications', icon: Bell, badge: notificationCount },
+    {name:'Update Profile',path:'/update-profile',icon:Settings}
 
   ];
 
