@@ -18,6 +18,7 @@ import MyCreatedActivites from './pages/Activity/MyCreatedActivites';
 import UserProfile from './pages/userPages/UserProfile';
 import MyConnections from './pages/userPages/MyConnections';
 import UpdateProfile from './pages/userPages/UpdateProfile';
+import ChatPageofActivity from './pages/Activity/ChatPageofActivity';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -40,6 +41,7 @@ export default function App() {
           <Route path = "/profile" element={<UserProfile />} />
           <Route path = "/connections" element={<MyConnections />} />
           <Route path = "/update-profile" element={<UpdateProfile />} />
+          <Route path = "/activity-info/:id" element={<ChatPageofActivity />} />
 
 
         <Route index element={

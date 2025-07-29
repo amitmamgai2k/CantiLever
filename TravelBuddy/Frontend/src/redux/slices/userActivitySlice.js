@@ -8,7 +8,9 @@ const initialState = {
   error: null,
   createdActivity: null,
   activities: [],
-  singleActivity: null
+  singleActivity: null,
+  joinedActivities: [],
+
 };
 
 // Create new activity
@@ -64,6 +66,17 @@ export const getSingleActivity = createAsyncThunk(
     }
   }
 );
+export const getJoinedActivities = createAsyncThunk(
+  'user/getJoinedActivities',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get('/activity/joined-activities');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+)
 
 const UserActivity = createSlice({
   name: "userActivity",
@@ -130,7 +143,27 @@ const UserActivity = createSlice({
       .addCase(getSingleActivity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
-      });
+      })
+
+      // Get Joined Activities
+      .addCase(getJoinedActivities.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getJoinedActivities.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.joinedActivities = action.payload?.data || [];
+
+
+
+
+      })
+      .addCase(getJoinedActivities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      })
+
   }
 });
 

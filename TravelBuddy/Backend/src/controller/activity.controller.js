@@ -178,3 +178,26 @@ export const getNearbyActivities = asyncHandler(async (req, res, next) => {
         throw new ApiError(500, "Server error", [error.message]);
     }
 });
+
+export const getJoinedActivities = asyncHandler(async (req, res, next) => {
+  const userId = req.user._id;
+
+  // Find user and populate joined activities and their creator
+  const user = await User.findById(userId).populate({
+    path: 'JoinActivity',
+    populate: {
+      path: 'creator',
+      select: 'fullName profilePicture'
+    }
+  });
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  res.status(200).json({
+
+    data: user.JoinActivity
+  });
+});
+
