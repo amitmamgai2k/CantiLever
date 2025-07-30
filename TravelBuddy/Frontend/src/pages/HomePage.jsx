@@ -15,12 +15,14 @@ import {
   Play
 } from 'lucide-react';
 import CurrentLocationMap from '../components/CurrentLocationMap';
+import { useSelector } from 'react-redux';
 
 
 
 function HomePage() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  const user = useSelector((state) => state.userAuth.user);
 
   useEffect(() => {
     setIsVisible(true);
@@ -174,7 +176,7 @@ function HomePage() {
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
             <div className="p-8">
               <div className="h-100 rounded-2xl overflow-hidden">
-                <CurrentLocationMap />
+                <CurrentLocationMap lat={user?.currentLocation?.lat} lng={user?.currentLocation?.lng} />
               </div>
             </div>
           </div>

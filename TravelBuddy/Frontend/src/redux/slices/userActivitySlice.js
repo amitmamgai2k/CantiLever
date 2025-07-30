@@ -76,7 +76,18 @@ export const getJoinedActivities = createAsyncThunk(
       return rejectWithValue(error.response?.data || { message: "Something went wrong" });
     }
   }
-)
+);
+export const leaveActivity = createAsyncThunk(
+  'user/leaveActivity',
+  async (activityId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(`/activity/leave-activity/${activityId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
 
 const UserActivity = createSlice({
   name: "userActivity",
@@ -163,6 +174,22 @@ const UserActivity = createSlice({
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
       })
+      // Leave Activity
+      .addCase(leaveActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(leaveActivity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        toast.success('Left activity successfully');
+
+        state.joinedActivities = state.joinedActivities.filter(activity => activity._id !== action.payload.data.activityId);
+      })
+      .addCase(leaveActivity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      });
 
   }
 });

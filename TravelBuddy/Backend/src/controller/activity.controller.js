@@ -99,6 +99,9 @@ export const leaveActivity = asyncHandler(async (req, res, next) => {
             return next(new ApiError(400, 'You have not joined this activity'));
         }
         activity.participants.pull(req.user._id);
+        const user = await User.findById(userId);
+        user.JoinActivity.pull(activityId);
+        await user.save();
         await activity.save();
         res.json(new ApiResponse(200, activity, 'Successfully left activity'));
 

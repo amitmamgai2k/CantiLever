@@ -181,7 +181,7 @@ function UserProfile() {
               Current Location
             </h2>
                          <div className="h-50 rounded-2xl overflow-hidden">
-                           <CurrentLocationMap />
+                           <CurrentLocationMap lat={user.currentLocation?.lat} lng={user.currentLocation?.lng} />
                      </div>
           </div>
 
