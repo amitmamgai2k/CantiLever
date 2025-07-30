@@ -203,4 +203,18 @@ export const getJoinedActivities = asyncHandler(async (req, res, next) => {
     data: user.JoinActivity
   });
 });
+export const MyCreatedActivites = asyncHandler(async (req, res, next) => {
+  const userId = req.user._id;
+
+  // Find activities created by the user
+  const activities = await Activity.find({ creator: userId }).populate('creator', 'fullName profilePicture');
+
+  if (!activities) {
+    return res.status(404).json({ message: 'No activities found' });
+  }
+
+  res.status(200).json({
+    data: activities
+  });
+});
 

@@ -6,7 +6,7 @@ import axiosInstance from "../../helpers/axiosInstance";
 const initialState = {
   loading: false,
   error: null,
-  createdActivity: null,
+  createdActivity: [],
   activities: [],
   singleActivity: null,
   joinedActivities: [],
@@ -88,7 +88,28 @@ export const leaveActivity = createAsyncThunk(
     }
   }
 );
-
+export const MyCreatedActivites = createAsyncThunk(
+  'user/MyCreatedActivites',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get('/activity/my-created-activities');
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
+export const deleteActivity = createAsyncThunk(
+  'user/deleteActivity',
+  async (activityId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete(`/activity/delete-activity/${activityId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
 const UserActivity = createSlice({
   name: "userActivity",
   initialState,
@@ -189,7 +210,38 @@ const UserActivity = createSlice({
       .addCase(leaveActivity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
-      });
+      })
+      // My Created Activities
+      .addCase(MyCreatedActivites.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(MyCreatedActivites.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.createdActivity = action.payload?.data || [];
+      })
+      .addCase(MyCreatedActivites.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      })
+      // Delete Activity
+      .addCase(deleteActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteActivity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        toast.success('Activity deleted successfully');
+        // Remove deleted activity from createdActivity
+        state.createdActivity = state.createdActivity.filter(activity => activity._id !== action.payload.data.activityId);
+      })
+      .addCase(deleteActivity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      })
+
 
   }
 });
