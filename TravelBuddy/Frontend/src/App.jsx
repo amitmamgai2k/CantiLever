@@ -20,6 +20,7 @@ import MyConnections from './pages/userPages/MyConnections';
 import UpdateProfile from './pages/userPages/UpdateProfile';
 import ChatPage from './pages/Activity/ChatPageofActivity';
 import ChatGroup from './pages/Chat/ChatGroup';
+import ManageActivity from './pages/Activity/ManageActivity';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -44,6 +45,7 @@ export default function App() {
           <Route path = "/update-profile" element={<UpdateProfile />} />
           <Route path = "/activity-info/:id" element={<ChatPage />} />
           <Route path = "/chat/:id" element={<ChatGroup />} />
+          <Route path = "/manage-activity/:id" element={<ManageActivity />} />
 
 
         <Route index element={

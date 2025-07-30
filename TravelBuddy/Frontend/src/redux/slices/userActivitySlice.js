@@ -10,6 +10,7 @@ const initialState = {
   activities: [],
   singleActivity: null,
   joinedActivities: [],
+  participants: [],
 
 };
 
@@ -104,6 +105,17 @@ export const deleteActivity = createAsyncThunk(
   async (activityId, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.delete(`/activity/delete-activity/${activityId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
+export const getParticipants = createAsyncThunk(
+  'user/getParticipants',
+  async (activityId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/activity/get-participants/${activityId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: "Something went wrong" });
@@ -238,6 +250,21 @@ const UserActivity = createSlice({
         state.createdActivity = state.createdActivity.filter(activity => activity._id !== action.payload.data.activityId);
       })
       .addCase(deleteActivity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || "Something went wrong";
+      })
+
+      // Get Participants
+      .addCase(getParticipants.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getParticipants.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.participants = action.payload?.data || [];
+      })
+      .addCase(getParticipants.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
       })

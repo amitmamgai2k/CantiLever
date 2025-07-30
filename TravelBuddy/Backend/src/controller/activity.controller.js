@@ -217,4 +217,19 @@ export const MyCreatedActivites = asyncHandler(async (req, res, next) => {
     data: activities
   });
 });
+export const getParticipants = asyncHandler(async (req, res, next) => {
 
+  const activityId = req.params;
+  const activity = await Activity.findById({_id: activityId.id}).populate('participants', 'fullName profilePicture email mobile createdAt');
+  if (!activity) {
+    return next(new ApiError(404, 'Activity not found'));
+  }
+
+  const participants = await User.find({ _id: { $in: activity.participants } }).select('fullName profilePicture email mobile createdAt');
+ res.status(200).json({
+    data: participants
+  });
+
+
+
+})

@@ -239,7 +239,7 @@ function CreatedActivites() {
                             className="px-4 py-2 text-white bg-amber-600 text-sm font-medium rounded-lg transition-colors hover:bg-amber-700 hover:shadow-md duration-200 group-hover:shadow-lg"
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/activity-info/${activity._id}`);
+                              navigate(`/manage-activity/${activity._id}`);
                             }}
                           >
                             Manage
