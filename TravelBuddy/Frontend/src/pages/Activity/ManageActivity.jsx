@@ -127,8 +127,7 @@ function ManageActivity() {
   const status = getActivityStatus();
 
   const handleLeaveActivity = () => {
-    dispatch(leaveActivity(singleActivity._id));
-    navigate('/joined-activities');
+    navigate('/create-activity',{state: { activityId: singleActivity._id }});
   };
 
   // Use real participants data when available, fallback to sample data

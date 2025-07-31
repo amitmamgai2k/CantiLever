@@ -3,12 +3,16 @@ import { Calendar, MapPin, Users, Plus } from 'lucide-react';
 import { LoadScript, Autocomplete } from '@react-google-maps/api';
 import { createActivity } from '../../redux/slices/userActivitySlice';
 import { useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 
 const libraries = ['places'];
 
 
 function CreateActivity() {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const [update, setUpdate] = useState(false);
+  const activityId = location.state?.activityId || null;
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -28,7 +32,10 @@ function CreateActivity() {
   };
 
   const handleSubmit = () => {
-    console.log('Form Data:', formData);
+    if (activityId) {
+      // Update existing activity logic here
+    }
+
     dispatch(createActivity({
       title: formData.title,
       description: formData.description,
@@ -78,8 +85,19 @@ function CreateActivity() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Create New Activity</h1>
-          <p className="text-gray-600">Share an amazing experience with fellow travelers</p>
+          {activityId && (
+            <div className=" items-center justify-center mb-4">
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">Update Activity</h1>
+            <p className="text-gray-600">Edit your activity details below</p>
+            </div>
+           )
+          }
+          {!activityId && (
+            <>
+              <h1 className="text-4xl font-bold text-gray-800 mb-2">Create New Activity</h1>
+              <p className="text-gray-600">Share an amazing experience with fellow travelers</p>
+            </>
+          )}
         </div>
 
         {/* Form */}
@@ -189,15 +207,23 @@ function CreateActivity() {
             </div>
 
             {/* Submit Button */}
-            <button
-              onClick={handleSubmit}
-              className="w-full py-4 px-6 rounded-xl font-semibold text-white bg-blue-600 hover:bg-blue-700 hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
-            >
-              <span className="flex items-center justify-center">
-                <Plus className="w-4 h-4 mr-2" />
+           { activityId ? (
+              <button
+                onClick={handleSubmit}
+                type="submit"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition duration-300"
+              >
+                Update Activity
+              </button>
+            ) : (
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition duration-300"
+              >
                 Create Activity
-              </span>
-            </button>
+              </button>
+            )}
           </div>
         </div>
 
