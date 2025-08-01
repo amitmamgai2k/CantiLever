@@ -1,7 +1,7 @@
 import  { useState,useRef } from 'react';
 import { Calendar, MapPin, Users, Plus } from 'lucide-react';
 import { LoadScript, Autocomplete } from '@react-google-maps/api';
-import { createActivity } from '../../redux/slices/userActivitySlice';
+import { createActivity ,UpdateActivity} from '../../redux/slices/userActivitySlice';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 
@@ -18,7 +18,7 @@ function CreateActivity() {
     description: '',
     date: '',
     address: '',
-    participantLimit: 10,
+    participantLimit: '',
     lat: 0,
     lng: 0
   });
@@ -32,10 +32,20 @@ function CreateActivity() {
   };
 
   const handleSubmit = () => {
-    if (activityId) {
+    if (activityId ) {
+      dispatch(UpdateActivity({
+        activityId,
+        title: formData.title,
+        description: formData.description,
+        date: formData.date,
+        location: formData.address,
+        participantLimit: formData.participantLimit,
+        lat: formData.lat,
+        lng: formData.lng
+      }));
       // Update existing activity logic here
     }
-
+    else{
     dispatch(createActivity({
       title: formData.title,
       description: formData.description,
@@ -45,6 +55,7 @@ function CreateActivity() {
       lat: formData.lat,
       lng: formData.lng
     }));
+  }
     setFormData({
       title: '',
       description: '',

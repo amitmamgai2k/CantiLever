@@ -16,7 +16,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { leaveActivity } from '../../redux/slices/userActivitySlice';
 import { getSingleActivity } from '../../redux/slices/userActivitySlice';
-import { getParticipants } from '../../redux/slices/userActivitySlice';
+import { getParticipants,UpdateActivity } from '../../redux/slices/userActivitySlice';
+
 
 import CurrentLocationMap from '../../components/CurrentLocationMap';
 import ParticipantsTable from './Partipiants';
@@ -32,48 +33,6 @@ function ManageActivity() {
   const dispatch = useDispatch();
 
 
-  const sampleParticipants = [
-    {
-      _id: '1',
-      fullName: 'John Smith',
-      email: 'john.smith@email.com',
-      phoneNumber: '+1 (555) 123-4567',
-      profilePicture: null,
-      joinedAt: '2024-01-15T10:30:00Z'
-    },
-    {
-      _id: '2',
-      fullName: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      phoneNumber: '+1 (555) 987-6543',
-      profilePicture: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150',
-      joinedAt: '2024-01-16T14:20:00Z'
-    },
-    {
-      _id: '3',
-      fullName: 'Mike Chen',
-      email: 'mike.chen@email.com',
-      phoneNumber: '+1 (555) 456-7890',
-      profilePicture: null,
-      joinedAt: '2024-01-17T09:15:00Z'
-    },
-    {
-      _id: '4',
-      fullName: 'Emily Davis',
-      email: 'emily.davis@email.com',
-      phoneNumber: '+1 (555) 321-0987',
-      profilePicture: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-      joinedAt: '2024-01-18T16:45:00Z'
-    },
-    {
-      _id: '5',
-      fullName: 'David Wilson',
-      email: 'david.wilson@email.com',
-      phoneNumber: '+1 (555) 654-3210',
-      profilePicture: null,
-      joinedAt: '2024-01-19T11:30:00Z'
-    }
-  ];
 
   useEffect(() => {
     if (!id) return;
@@ -130,8 +89,6 @@ function ManageActivity() {
     navigate('/create-activity',{state: { activityId: singleActivity._id }});
   };
 
-  // Use real participants data when available, fallback to sample data
-  const participantsData = singleActivity?.participants || sampleParticipants;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100">

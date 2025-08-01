@@ -129,21 +129,29 @@ export const deleteActivity = asyncHandler(async (req, res, next) => {
 })
 export const updateActivity = asyncHandler(async (req, res, next) => {
     try {
-        const userId = req.user._id;
+
         const activityId = req.params.id;
+        let datePart, timePart;
+        if (req.body.date) {
+            [datePart, timePart] = req.body.date.split('T');
+        }
         const activity = await Activity.findById(activityId);
         if (!activity) {
             return next(new ApiError(404, 'Activity not found'));
         }
-        if (activity.creator.toString() !== userId) {
+        if (activity.creator.toString() !== req.user._id.toString()) {
             return next(new ApiError(401, 'You are not authorized to update this activity'));
         }
         activity.title = req.body.title || activity.title;
         activity.description = req.body.description || activity.description;
-        activity.date = req.body.date || activity.date;
-        activity.location = req.body.location || activity.location;
+        activity.date = datePart || activity.date;
+        activity.time = timePart || activity.time;
+        activity.location.formattedAddress = req.body.location || activity.location.formattedAddress;
+        activity.location.coordinates = [req.body.lng || activity.location.coordinates[0], req.body.lat || activity.location.coordinates[1]];
         activity.participantLimit = req.body.participantsLimit || activity.participantLimit;
         await activity.save();
+        console.log('Activity updated:', activity);
+
         res.json(new ApiResponse(200, activity, 'Activity updated successfully'));
     } catch (error) {
         throw new ApiError(500, "Server error", [error.message]);

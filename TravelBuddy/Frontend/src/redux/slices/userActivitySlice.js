@@ -122,6 +122,19 @@ export const getParticipants = createAsyncThunk(
     }
   }
 );
+export const UpdateActivity = createAsyncThunk(
+  'user/UpdateActivity',
+  async ({ activityId, title, description, date, location, participantLimit, lat, lng }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.put(`/activity/update-activity/${activityId}`, {
+        title, description, date, location, participantLimit, lat, lng
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || { message: "Something went wrong" });
+    }
+  }
+);
 const UserActivity = createSlice({
   name: "userActivity",
   initialState,
@@ -268,6 +281,25 @@ const UserActivity = createSlice({
         state.loading = false;
         state.error = action.payload?.message || "Something went wrong";
       })
+    // Update Activity
+    .addCase(UpdateActivity.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(UpdateActivity.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = null;
+      toast.success('Activity updated successfully');
+      // Update the activity in createdActivity
+      const updatedActivity = action.payload?.data;
+      state.createdActivity = state.createdActivity.map(activity =>
+        activity._id === updatedActivity._id ? updatedActivity : activity
+      );
+    })
+    .addCase(UpdateActivity.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Something went wrong";
+    })
 
 
   }
