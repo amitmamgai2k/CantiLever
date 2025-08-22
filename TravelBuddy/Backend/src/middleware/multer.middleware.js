@@ -20,21 +20,38 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Define allowed file types
-  const allowedMimeTypes = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain',
-    'image/jpeg',
-    'image/jpg',
-    'image/png'
-  ];
+  // For avatar uploads, only allow images
+  if (file.fieldname === 'avatar') {
+    const allowedImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp'
+    ];
 
-  if (allowedMimeTypes.includes(file.mimetype)) {
-    cb(null, true);
+    if (allowedImageTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid image type. Only JPEG, PNG, GIF, and WebP are allowed for avatars.'), false);
+    }
   } else {
-    cb(new Error('Invalid file type. Only PDF, DOC, DOCX, TXT, and image files are allowed.'), false);
+    // For other file uploads, keep original filter
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'image/jpeg',
+      'image/jpg',
+      'image/png'
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF, DOC, DOCX, TXT, and image files are allowed.'), false);
+    }
   }
 };
 
@@ -46,4 +63,12 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-export  {upload};
+// Specific configurations for different use cases
+const uploadAvatar = upload.single('avatar');
+const uploadMultiple = upload.array('files', 5);
+const uploadFields = upload.fields([
+  { name: 'avatar', maxCount: 1 },
+  { name: 'files', maxCount: 5 }
+]);
+
+export { upload, uploadAvatar, uploadMultiple, uploadFields };

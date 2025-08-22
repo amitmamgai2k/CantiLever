@@ -4,7 +4,9 @@ const chatSchema = new mongoose.Schema({
   activityId: { type: mongoose.Schema.Types.ObjectId, ref: "Activity", required: true },
   name: { type: String, required: true },
   description: { type: String, required: true },
-  avatar: { type: String, required: true },
+  avatar: { type: String, default: 'https://via.placeholder.com/150' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
   privacy: { type: String, enum: ["public", "private"], default: "private" },
   participants: [
     {

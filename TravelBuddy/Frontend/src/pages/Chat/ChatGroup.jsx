@@ -13,12 +13,14 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSingleActivity, getParticipants } from '../../redux/slices/userActivitySlice';
+import { CreateChatGroup } from '../../redux/slices/ChatSlice';
 import toast from 'react-hot-toast';
 
-function ChatGroupCreation() {
+function ChatGroup() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { chatGroups } = useSelector((state) => state.chat);
 
   const { singleActivity, participants } = useSelector((state) => state.userActivity);
   const { user } = useSelector((state) => state.userAuth);
@@ -29,7 +31,8 @@ function ChatGroupCreation() {
   const [groupData, setGroupData] = useState({
     name: '',
     description: '',
-    avatar: '',
+    avatarFile: null,
+    avatarPreview: '',
     privacy: 'private',
     participants: []
   });
@@ -81,14 +84,16 @@ function ChatGroupCreation() {
     const file = event.target.files[0];
     if (file) {
       if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setGroupData(prev => ({
-            ...prev,
-            avatar: e.target.result
-          }));
-        };
-        reader.readAsDataURL(file);
+        // Clean up previous preview URL
+        if (groupData.avatarPreview) {
+          URL.revokeObjectURL(groupData.avatarPreview);
+        }
+
+        setGroupData(prev => ({
+          ...prev,
+          avatarFile: file,
+          avatarPreview: URL.createObjectURL(file)
+        }));
       } else {
         toast.error('Please select an image file');
       }
@@ -110,32 +115,61 @@ function ChatGroupCreation() {
     setCreating(true);
 
     try {
-      const chatGroupData = {
-        activityId: id,
-        name: groupData.name,
-        description: groupData.description,
-        avatar: groupData.avatar,
-        privacy: groupData.privacy,
-        participants: selectedParticipants.map(p => ({
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('activityId', id);
+      formData.append('name', groupData.name);
+      formData.append('description', groupData.description);
+      formData.append('privacy', groupData.privacy);
+      formData.append('participants', JSON.stringify(
+        selectedParticipants.map(p => ({
           userId: p._id,
           role: p.role
         }))
-      };
+      ));
 
-      console.log('Creating chat group:', chatGroupData);
+      if (groupData.avatarFile) {
+        formData.append('avatar', groupData.avatarFile);
+      }
 
-      // Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('Creating chat group with FormData');
+      await dispatch(CreateChatGroup(formData));
+        navigate(`/activity-chat-group/${id}`);
+        console.log('chatGroups',chatGroups);
 
-      toast.success('Chat group created successfully!');
-      navigate(`/chat-room/${id}`, { replace: true });
+      // Navigate back or to the chat group after successful creation
+      // navigate(`/chat-group/${createdGroupId}`); // Uncomment if you have the group ID
+
     } catch (error) {
-      toast.error('Failed to create chat group');
       console.error('Error creating chat group:', error);
+      toast.error('Failed to create chat group. Please try again.');
     } finally {
       setCreating(false);
     }
   };
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  // Back button component
+  const BackButton = () => (
+    <button
+      onClick={handleBack}
+      className="absolute top-4 left-4 p-2 bg-white rounded-full shadow hover:bg-gray-50 transition-colors"
+    >
+      <ArrowLeft className="w-5 h-5 text-gray-700" />
+    </button>
+  );
+
+  // Cleanup function for preview URL
+  useEffect(() => {
+    return () => {
+      if (groupData.avatarPreview) {
+        URL.revokeObjectURL(groupData.avatarPreview);
+      }
+    };
+  }, [groupData.avatarPreview]);
 
   if (loading) {
     return (
@@ -152,13 +186,13 @@ function ChatGroupCreation() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100">
+      {/* Back Button */}
+      <BackButton />
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-
-
-
-            <h1 className="text-2xl font-bold text-gray-900 text-center">Create Chat Group</h1>
+          <h1 className="text-2xl font-bold text-gray-900 text-center">Create Chat Group</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -174,10 +208,10 @@ function ChatGroupCreation() {
               <div className="text-center mb-6">
                 <div className="relative inline-block">
                   <div className="w-24 h-24 bg-gradient-to-r from-amber-500 to-orange-600 rounded-full flex items-center justify-center overflow-hidden">
-                    {groupData.avatar ? (
+                    {groupData.avatarPreview ? (
                       <img
-                        src={groupData.avatar}
-                        alt="Group Avatar"
+                        src={groupData.avatarPreview}
+                        alt="Group Avatar Preview"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -191,7 +225,7 @@ function ChatGroupCreation() {
                     className="inline-flex items-center px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg cursor-pointer transition-colors text-sm"
                   >
                     <Camera className="w-4 h-4 mr-2" />
-                    Add Photo
+                    {groupData.avatarPreview ? 'Change Photo' : 'Add Photo'}
                   </label>
                   <input
                     id="group-avatar-upload"
@@ -352,4 +386,4 @@ function ChatGroupCreation() {
   );
 }
 
-export default ChatGroupCreation;
+export default ChatGroup;

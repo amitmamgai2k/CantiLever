@@ -35,6 +35,7 @@ const activitySchema = new mongoose.Schema(
         required: true
       }
     },
+    groupExists: { type: Boolean, default: false },
 
     creator: {
       type: mongoose.Schema.Types.ObjectId,
