@@ -15,9 +15,7 @@ router.post('/logout', authUser, logoutUser);
 
 router.get('/profile', authUser, getUserProfile);
 
-router.put('/update', authUser, updateUser);
-
-
+router.post('/update-profile', authUser, updateUser);
 
 router.delete('/delete', authUser, deleteUser);
 

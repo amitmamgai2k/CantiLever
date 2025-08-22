@@ -122,7 +122,7 @@ export const updateUserLocation = asyncHandler(async (req, res) => {
 
 export const getUserProfile = asyncHandler(async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const user = await User.findById(userId).select('-password');
     if (!user) throw new ApiError(404, "User not found");
   return res.status(200).json(
@@ -134,9 +134,10 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 export const updateUser = asyncHandler(async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const {
+    const userId = req.user._id;
+    console.log('userId', userId);
+
+    let {
       fullName,
       password,
       profilePicture,
@@ -148,56 +149,141 @@ export const updateUser = asyncHandler(async (req, res) => {
       socialLinks,
     } = req.body;
 
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
+
     const user = await User.findById(userId);
     if (!user) throw new ApiError(404, "User not found");
-    if(profilePicture){
-      const profilePictureLocalPath = req.file?.path;
-      if (profilePictureLocalPath) {
+
+    // Handle profile picture upload (multer file upload)
+    if (req.file) {
+        const profilePictureLocalPath = req.file.path;
         const profilePictureResponse = await uploadOnCloudinary(profilePictureLocalPath);
         if (profilePictureResponse) {
-          profilePicture = profilePictureResponse.secure_url;
+            user.profilePicture = profilePictureResponse.secure_url;
         }
     }
-  }
+    // Handle profile picture as base64 string (from frontend)
+    else if (profilePicture && profilePicture.startsWith('data:image')) {
+        // If you want to handle base64 images, you'll need to convert and upload
+        // For now, just store the base64 string
+        user.profilePicture = profilePicture;
+    }
 
-
+    // Update fields only if they are provided (not undefined)
     if (fullName !== undefined) user.fullName = fullName;
     if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
-
     if (bio !== undefined) user.bio = bio;
     if (futureDestinations !== undefined) user.futureDestinations = futureDestinations;
     if (interests !== undefined) user.interests = interests;
 
+    // Handle nested object updates properly
     if (currentLocation !== undefined) {
-
-
-      user.currentLocation = {
-        lat: currentLocation.lat ?? user.currentLocation?.lat,
-        lng: currentLocation.lng ?? user.currentLocation?.lng
-      };
+        user.currentLocation = {
+            lat: currentLocation.lat !== undefined ? currentLocation.lat : user.currentLocation?.lat,
+            lng: currentLocation.lng !== undefined ? currentLocation.lng : user.currentLocation?.lng
+        };
     }
 
     if (socialLinks !== undefined) {
-      user.socialLinks = {
-        instagram: socialLinks.instagram ?? user.socialLinks?.instagram,
-        facebook: socialLinks.facebook ?? user.socialLinks?.facebook,
-        linkedin: socialLinks.linkedin ?? user.socialLinks?.linkedin
-      };
+        user.socialLinks = {
+            instagram: socialLinks.instagram !== undefined ? socialLinks.instagram : user.socialLinks?.instagram,
+            facebook: socialLinks.facebook !== undefined ? socialLinks.facebook : user.socialLinks?.facebook,
+            linkedin: socialLinks.linkedin !== undefined ? socialLinks.linkedin : user.socialLinks?.linkedin
+        };
     }
 
-    if (password !== undefined) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+    // Handle password update
+    if (password !== undefined && password.trim() !== '') {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
     }
 
     await user.save();
+    console.log('User updated successfully');
+
+    // Remove password from response
+    const userResponse = user.toObject();
+    delete userResponse.password;
 
     return res.status(200).json(
-      new ApiResponse(200, user, "User updated successfully")
+        new ApiResponse(200, userResponse, "User updated successfully")
     );
-  } catch (err) {
-    throw new ApiError(500, "Server error", [err.message]);
-  }
+});
+
+// Alternative: More efficient approach using findByIdAndUpdate
+export const updateUserEfficient = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+
+    let {
+        fullName,
+        password,
+        profilePicture,
+        phoneNumber,
+        bio,
+        currentLocation,
+        futureDestinations,
+        interests,
+        socialLinks,
+    } = req.body;
+
+    console.log('Request body:', req.body);
+
+    // Build update object with only provided fields
+    const updateData = {};
+
+    // Handle profile picture upload
+    if (req.file) {
+        const profilePictureLocalPath = req.file.path;
+        const profilePictureResponse = await uploadOnCloudinary(profilePictureLocalPath);
+        if (profilePictureResponse) {
+            updateData.profilePicture = profilePictureResponse.secure_url;
+        }
+    } else if (profilePicture && profilePicture.startsWith('data:image')) {
+        updateData.profilePicture = profilePicture;
+    }
+
+    // Add fields to update object only if they exist
+    if (fullName !== undefined) updateData.fullName = fullName;
+    if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+    if (bio !== undefined) updateData.bio = bio;
+    if (futureDestinations !== undefined) updateData.futureDestinations = futureDestinations;
+    if (interests !== undefined) updateData.interests = interests;
+    if (currentLocation !== undefined) updateData.currentLocation = currentLocation;
+    if (socialLinks !== undefined) updateData.socialLinks = socialLinks;
+
+    // Handle password separately due to hashing requirement
+    if (password !== undefined && password.trim() !== '') {
+        const salt = await bcrypt.genSalt(10);
+        updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    // Check if there's anything to update
+    if (Object.keys(updateData).length === 0) {
+        return res.status(400).json(
+            new ApiResponse(400, null, "No data provided for update")
+        );
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        {
+            new: true,
+            runValidators: true,
+            select: '-password' // Exclude password from response
+        }
+    );
+
+    if (!updatedUser) {
+        throw new ApiError(404, "User not found");
+    }
+
+
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedUser, "User updated successfully")
+    );
 });
 export const deleteUser = asyncHandler(async (req, res) => {
   try {

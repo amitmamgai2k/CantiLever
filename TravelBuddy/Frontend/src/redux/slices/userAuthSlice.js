@@ -71,7 +71,8 @@ export const updateUserProfile = createAsyncThunk(
   'user/updateUserProfile',
   async (user, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put('/users/update-profile', user);
+
+      const response = await axiosInstance.post('/users/update-profile', user);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || { message: "Something went wrong" });
@@ -156,9 +157,18 @@ const UserAuth = createSlice({
   state.loading = false;
   state.error = action.payload?.message || "Current Location failed";
 })
-
+.addCase(updateUserProfile.pending, (state) => {
+  state.loading = true;
+  state.error = null;
+})
+.addCase(updateUserProfile.fulfilled, (state, action) => {
+  state.loading = false;
+  state.user = action.payload.data.user;
+})
+.addCase(updateUserProfile.rejected, (state, action) => {
+  state.loading = false;
+  state.error = action.payload?.message || "Update Profile failed";
+});
   }
 });
-
-
 export default UserAuth.reducer;
