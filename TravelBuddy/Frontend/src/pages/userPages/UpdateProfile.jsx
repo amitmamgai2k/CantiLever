@@ -161,7 +161,12 @@ function UpdateProfile() {
 
     dispatch(updateUserProfile(cleanedData));
     toast.success('Profile updated successfully');
-    navigate('/profile');
+    setTimeout(() => {
+       navigate('/profile');
+
+
+    }, 2000);
+
   };
 
   const handleCancel = () => {

@@ -9,6 +9,7 @@ import connectToDB from './src/db/db.js';
 import userRoutes from './src/routes/user.route.js';
 import ActivityRoutes from './src/routes/activity.route.js';
 import MessageRoutes from './src/routes/message.route.js';
+import ChatRoutes from './src/routes/chatgroup.route.js'
 
 
 dotenv.config();
@@ -35,6 +36,6 @@ app.get('/', (req, res) => {
 app.use('/users', userRoutes);
 app.use('/activity', ActivityRoutes);
 app.use('/messages', MessageRoutes);
-
+app.use('/chat', ChatRoutes);
 
 export default app;
