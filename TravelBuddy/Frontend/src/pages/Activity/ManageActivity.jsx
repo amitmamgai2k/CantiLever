@@ -29,6 +29,8 @@ function ManageActivity() {
   const { singleActivity } = useSelector((state) => state.userActivity);
   const {participants} = useSelector((state) => state.userActivity);
 
+
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -173,9 +175,27 @@ function ManageActivity() {
             </div>
 
             {/* Join Chat Group*/}
-            <div className="mt-4 bg-white rounded-2xl shadow-lg p-6">
-              <button onClick={()=>navigate(`/chat/${singleActivity._id}`)} className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full w-full">Create Chat Group</button>
-            </div>
+{
+  singleActivity.groupExists ? (
+    <div className="mt-4 bg-white rounded-2xl shadow-lg p-6">
+      <button
+        onClick={() => navigate(`/activity-group/${singleActivity._id}`)}
+        className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full w-full"
+      >
+        Open Chat Group
+      </button>
+    </div>
+  ) : (
+    <div className="mt-4 bg-white rounded-2xl shadow-lg p-6">
+      <button
+        onClick={() => navigate(`/chat/${singleActivity._id}`)}
+        className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full w-full"
+      >
+        Create Chat Group
+      </button>
+    </div>
+  )
+}
 
             {/* Participants Section */}
             <div className="mt-8">

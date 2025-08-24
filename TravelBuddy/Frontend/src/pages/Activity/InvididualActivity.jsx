@@ -21,7 +21,6 @@ function IndividualActivity() {
   const { id } = useParams();
   const [isJoined, setIsJoined] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
   const { singleActivity } = useSelector((state) => state.userActivity);
 
   const navigate = useNavigate();
