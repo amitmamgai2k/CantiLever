@@ -1,6 +1,7 @@
 import Message from '../model/message.model.js';
 import asyncHandler from '../utils/AsyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
+import ApiError from '../utils/ApiError.js';
 
 export const getMessagesByActivity = asyncHandler(async (req, res, next) => {
   const activityId = req.params.activityId;

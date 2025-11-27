@@ -13,17 +13,18 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getSingleActivity, getParticipants } from '../../redux/slices/userActivitySlice';
-import { CreateChatGroup } from '../../redux/slices/ChatSlice';
+import { CreateChatGroup, fetchChatGroupByActivity } from '../../redux/slices/ChatSlice';
 import toast from 'react-hot-toast';
 
 function ChatGroup() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { chatGroups } = useSelector((state) => state.chat);
+  const { currentGroup, loading: chatLoading } = useSelector((state) => state.chat);
 
   const { singleActivity, participants } = useSelector((state) => state.userActivity);
   const { user } = useSelector((state) => state.userAuth);
+  const userId = user?._id || user?.id;
 
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -38,15 +39,15 @@ function ChatGroup() {
   });
 
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      Promise.all([
-        dispatch(getSingleActivity(id)),
-        dispatch(getParticipants(id))
-      ]).finally(() => {
-        setLoading(false);
-      });
-    }
+    if (!id) return;
+    setLoading(true);
+    Promise.all([
+      dispatch(getSingleActivity(id)),
+      dispatch(getParticipants(id)),
+      dispatch(fetchChatGroupByActivity(id))
+    ]).finally(() => {
+      setLoading(false);
+    });
   }, [id, dispatch]);
 
   useEffect(() => {
@@ -58,11 +59,11 @@ function ChatGroup() {
         participants: participants.map(p => ({
           ...p,
           selected: true,
-          role: p._id === user?._id ? 'admin' : 'member'
+          role: p._id === userId ? 'admin' : 'member'
         }))
       }));
     }
-  }, [singleActivity, participants, user]);
+  }, [singleActivity, participants, userId]);
 
   const handleInputChange = (field, value) => {
     setGroupData(prev => ({
@@ -133,9 +134,10 @@ function ChatGroup() {
       }
 
       console.log('Creating chat group with FormData');
-      await dispatch(CreateChatGroup(formData));
-        navigate(`/activity-chat-group/${id}`);
-        console.log('chatGroups',chatGroups);
+      const result = await dispatch(CreateChatGroup(formData));
+      if (result.meta.requestStatus === 'fulfilled') {
+        navigate(`/activity-group/${id}`);
+      }
 
       // Navigate back or to the chat group after successful creation
       // navigate(`/chat-group/${createdGroupId}`); // Uncomment if you have the group ID
@@ -171,7 +173,7 @@ function ChatGroup() {
     };
   }, [groupData.avatarPreview]);
 
-  if (loading) {
+  if (loading || chatLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100 flex items-center justify-center">
         <div className="flex flex-col items-center">
@@ -183,6 +185,27 @@ function ChatGroup() {
   }
 
   const selectedCount = groupData.participants.filter(p => p.selected).length;
+
+  if (currentGroup) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100 flex items-center justify-center px-4">
+        <div className="max-w-xl bg-white shadow-2xl rounded-2xl p-10 text-center space-y-6">
+          <Users className="w-16 h-16 text-amber-600 mx-auto" />
+          <h1 className="text-3xl font-bold text-gray-900">Chat group already exists</h1>
+          <p className="text-gray-600">
+            You can jump into the conversation, invite friends, or manage the existing group from
+            the chat room.
+          </p>
+          <button
+            onClick={() => navigate(`/activity-group/${id}`)}
+            className="px-6 py-3 bg-amber-600 text-white rounded-xl font-semibold hover:bg-amber-700 transition-colors"
+          >
+            Go to group chat
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100">

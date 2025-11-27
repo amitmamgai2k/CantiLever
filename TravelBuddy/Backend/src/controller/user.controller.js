@@ -94,29 +94,23 @@ export const getCurrentUser = asyncHandler(async (req, res) => {
   );
 });
 export const updateUserLocation = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { lat, lng } = req.body;
 
-    const userId = req.user._id;
-    console.log(userId);
+  if (typeof lat !== 'number' || typeof lng !== 'number') {
+    throw new ApiError(400, "Latitude and longitude are required");
+  }
 
-    const { lat, lng } = req.body;
-    const user = await User.findById(userId);
-    if (!user) throw new ApiError(404, "User not found");
-    user.currentLocation.lat = lat;
-    user.currentLocation.lng = lng;
-    console.log('User location updated successfully');
-    await user.save();
-    return res.status(200).json(
-      new ApiResponse(200, user, "User location updated successfully")
+  const user = await User.findById(userId);
+  if (!user) throw new ApiError(404, "User not found");
 
-    );
+  user.currentLocation.lat = lat;
+  user.currentLocation.lng = lng;
+  await user.save();
 
-
-
-
-
-
-
-
+  return res.status(200).json(
+    new ApiResponse(200, { user }, "User location updated successfully")
+  );
 });
 
 
@@ -296,6 +290,76 @@ export const deleteUser = asyncHandler(async (req, res) => {
   } catch (err) {
     throw new ApiError(500, "Server error", [err.message]);
   }
+});
+
+const haversineDistanceKm = (lat1, lng1, lat2, lng2) => {
+  const toRad = (value) => (value * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+export const getNearbyActiveUsers = asyncHandler(async (req, res) => {
+  const parsedLat =
+    req.query.lat !== undefined ? parseFloat(req.query.lat) : req.user.currentLocation?.lat;
+  const parsedLng =
+    req.query.lng !== undefined ? parseFloat(req.query.lng) : req.user.currentLocation?.lng;
+  const radiusKm = req.query.radiusKm ? parseFloat(req.query.radiusKm) : 20;
+
+  if (
+    parsedLat === undefined ||
+    Number.isNaN(parsedLat) ||
+    parsedLng === undefined ||
+    Number.isNaN(parsedLng)
+  ) {
+    throw new ApiError(400, "Latitude and longitude are required");
+  }
+
+  const activeUsers = await User.find({
+    _id: { $ne: req.user._id },
+    isOnline: true,
+    'currentLocation.lat': { $ne: null },
+    'currentLocation.lng': { $ne: null }
+  }).select('fullName profilePicture bio interests currentLocation createdAt');
+
+  const nearbyUsers = activeUsers
+    .map((user) => {
+      const distanceKm = haversineDistanceKm(
+        parsedLat,
+        parsedLng,
+        user.currentLocation.lat,
+        user.currentLocation.lng
+      );
+
+      return {
+        _id: user._id,
+        fullName: user.fullName,
+        profilePicture: user.profilePicture,
+        bio: user.bio,
+        interests: user.interests,
+        currentLocation: user.currentLocation,
+        distanceKm: Number(distanceKm.toFixed(2))
+      };
+    })
+    .filter((user) => user.distanceKm <= radiusKm)
+    .sort((a, b) => a.distanceKm - b.distanceKm);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        users: nearbyUsers,
+        origin: { lat: parsedLat, lng: parsedLng },
+        radiusKm
+      },
+      "Nearby active users fetched successfully"
+    )
+  );
 });
 
 

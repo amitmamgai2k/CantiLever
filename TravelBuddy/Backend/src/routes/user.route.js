@@ -1,5 +1,15 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser, getUserProfile, updateUser, deleteUser, getCurrentUser,updateUserLocation } from "../controller/user.controller.js";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  getUserProfile,
+  updateUser,
+  deleteUser,
+  getCurrentUser,
+  updateUserLocation,
+  getNearbyActiveUsers
+} from "../controller/user.controller.js";
 import { authUser } from "../middleware/auth.middleware.js";
 
 
@@ -18,6 +28,7 @@ router.get('/profile', authUser, getUserProfile);
 router.post('/update-profile', authUser, updateUser);
 
 router.delete('/delete', authUser, deleteUser);
+router.get('/nearby-active', authUser, getNearbyActiveUsers);
 
 
 export default router;
