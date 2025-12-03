@@ -7,7 +7,7 @@ import {
   fetchChatGroupByActivity,
   fetchGroupMessages,
   joinChatGroup,
-  sendGroupMessage
+  sendGroupMessage,
 } from '../../redux/slices/ChatSlice';
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
@@ -17,36 +17,31 @@ function ChatPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const socket = useSocket();
-  const messagesEndRef = useRef(null);
 
-  const { currentGroup, messages, messagesLoading, joining, sending, loading } = useSelector(
-    (state) => state.chat
-  );
+  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const isUserNearBottom = useRef(true);
+  const SCROLL_THRESHOLD = 200;
+
+  const { currentGroup, messages, messagesLoading, joining, sending, loading } = useSelector((state) => state.chat);
   const { user } = useSelector((state) => state.userAuth);
-  // Ensure we handle both _id and id formats
   const userId = user?._id || user?.id;
 
   const [newMessage, setNewMessage] = useState('');
   const [showMembers, setShowMembers] = useState(true);
 
-  // Keep a ref of messages to check for duplicates inside the socket listener
-  // without re-triggering the effect
   const messagesRef = useRef(messages);
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
   useEffect(() => {
-    if (activityId) {
-      dispatch(fetchChatGroupByActivity(activityId));
-    }
+    if (activityId) dispatch(fetchChatGroupByActivity(activityId));
   }, [activityId, dispatch]);
 
   const isMember = useMemo(() => {
     if (!currentGroup || !userId) return false;
-    return currentGroup.participants?.some(
-      (participant) => participant.userId?._id === userId
-    );
+    return currentGroup.participants?.some(p => p.userId?._id === userId || p.userId === userId);
   }, [currentGroup, userId]);
 
   useEffect(() => {
@@ -55,57 +50,60 @@ function ChatPage() {
     }
   }, [currentGroup?._id, isMember, dispatch]);
 
-  // --- FIX START ---
   useEffect(() => {
-    if (!socket || !currentGroup?._id || !isMember) return undefined;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const checkPosition = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      isUserNearBottom.current = scrollHeight - (scrollTop + clientHeight) <= SCROLL_THRESHOLD;
+    };
+
+    container.addEventListener('scroll', checkPosition);
+    checkPosition();
+
+    return () => container.removeEventListener('scroll', checkPosition);
+  }, []);
+
+  useEffect(() => {
+    if (isUserNearBottom.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (!socket || !currentGroup?._id || !isMember) return;
 
     socket.emit('joinChatRoom', currentGroup._id);
 
-    const handler = (message) => {
-      // 1. Check if message already exists in state to prevent ANY duplicates
-      // We use the ref here so we have the latest messages without adding 'messages' to the dependency array
-      const isDuplicate = messagesRef.current?.some((m) => m._id === message._id);
-      if (isDuplicate) return;
+    const handleNewMessage = (message) => {
+      if (message._id && messagesRef.current.some(m => m._id === message._id)) return;
 
-      // 2. Double check: Check if the incoming message sender is the current user.
-      const msgSenderId = message.sender?._id || message.sender;
+      const senderId = message.sender?._id || message.sender;
+      const isMyMessage = String(senderId) === String(userId);
 
-      // Convert both to strings to ensure accurate comparison (fixes Object vs String issues)
-      const isMyMessage = String(msgSenderId) === String(userId);
-
-      // Only dispatch if the sender is NOT the current user.
       if (!isMyMessage) {
         dispatch(addRealtimeMessage(message));
       }
     };
 
-    socket.on('chatMessage', handler);
+    socket.on('chatMessage', handleNewMessage);
 
     return () => {
       socket.emit('leaveChatRoom', currentGroup._id);
-      socket.off('chatMessage', handler);
+      socket.off('chatMessage', handleNewMessage);
     };
   }, [socket, currentGroup?._id, isMember, dispatch, userId]);
-  // --- FIX END ---
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
-    if (!currentGroup?._id) return;
+    if (!newMessage.trim() || sending || !currentGroup?._id) return;
     const text = newMessage.trim();
     setNewMessage('');
-    // This dispatch typically updates Redux with the sent message immediately or upon API success
     await dispatch(sendGroupMessage({ chatId: currentGroup._id, text }));
   };
 
   const handleJoin = async () => {
-    if (!currentGroup?._id) {
-      toast.error('Chat group not found');
-      return;
-    }
+    if (!currentGroup?._id) return toast.error('Chat group not found');
     const result = await dispatch(joinChatGroup(currentGroup._id));
     if (result.meta.requestStatus === 'fulfilled') {
       dispatch(fetchGroupMessages(currentGroup._id));
@@ -114,26 +112,25 @@ function ChatPage() {
 
   if (loading && !currentGroup) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-        <Loader2 className="w-12 h-12 animate-spin text-amber-600" />
+      <div className="h-screen flex items-center justify-center bg-gray-900">
+        <Loader2 className="w-12 h-12 animate-spin text-amber-500" />
       </div>
     );
   }
 
   if (!currentGroup) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 space-y-4 px-4 text-center">
-        <Shield className="w-16 h-16 text-amber-600" />
-        <h1 className="text-2xl font-bold text-gray-900">No chat group yet</h1>
-        <p className="text-gray-600 max-w-md">
-          This activity does not have a chat group yet. Create one to connect with participants in
-          real time.
+      <div className="h-screen flex flex-col items-center justify-center bg-gray-900 text-gray-300 gap-6">
+        <Shield className="w-16 h-16 text-amber-500" />
+        <h1 className="text-3xl font-bold">No Chat Group Yet</h1>
+        <p className="text-center max-w-md text-gray-400">
+          This activity doesn't have a chat group yet. Create one to connect with others.
         </p>
         <button
           onClick={() => navigate(`/chat/${activityId}`)}
-          className="px-6 py-3 bg-amber-600 text-white rounded-xl font-semibold hover:bg-amber-700 transition-colors"
+          className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-700 transition"
         >
-          Create chat group
+          Create Chat Group
         </button>
       </div>
     );
@@ -141,40 +138,34 @@ function ChatPage() {
 
   if (!isMember) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100 px-4">
-        <div className="max-w-lg w-full bg-white shadow-2xl rounded-2xl p-10 space-y-6 border border-amber-100">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-amber-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 px-6">
+        <div className="max-w-md w-full bg-gray-800 rounded-2xl shadow-2xl p-8 border border-gray-700">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
               {currentGroup.avatar ? (
-                <img src={currentGroup.avatar} alt={currentGroup.name} className="object-cover" />
+                <img src={currentGroup.avatar} alt="" className="w-full h-full object-cover rounded-xl" />
               ) : (
-                <Users className="w-8 h-8 text-amber-600" />
+                <Users className="w-9 h-9 text-white" />
               )}
             </div>
             <div>
-              <p className="text-sm uppercase tracking-wide text-gray-500">Activity chat</p>
-              <h1 className="text-2xl font-bold text-gray-900">{currentGroup.name}</h1>
-              <p className="text-sm text-gray-500">
-                {currentGroup.participants?.length || 0} participants
-              </p>
+              <p className="text-amber-400 text-sm font-medium">Activity Chat</p>
+              <h1 className="text-2xl font-bold text-white">{currentGroup.name}</h1>
             </div>
           </div>
-
-          <p className="text-gray-600">{currentGroup.description}</p>
-
+          <p className="text-gray-400 mb-8">{currentGroup.description}</p>
           <button
             onClick={handleJoin}
             disabled={joining}
-            className="w-full py-3 rounded-xl bg-amber-600 text-white font-semibold hover:bg-amber-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-xl hover:from-amber-600 hover:to-orange-700 transition disabled:opacity-60"
           >
-            {joining ? 'Joining...' : 'Join group chat'}
+            {joining ? 'Joining...' : 'Join Group Chat'}
           </button>
-
           <button
             onClick={() => navigate(-1)}
-            className="w-full py-3 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition"
+            className="w-full mt-3 py-4 border border-gray-600 text-gray-400 rounded-xl hover:bg-gray-700 transition"
           >
-            Go back
+            Go Back
           </button>
         </div>
       </div>
@@ -182,86 +173,76 @@ function ChatPage() {
   }
 
   return (
-    <div className="h-screen flex bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="h-screen flex bg-gray-900 text-gray-100">
       <div className="flex-1 flex flex-col">
-        <div className="bg-white/80 backdrop-blur-sm p-6 border-b border-gray-200/50 flex items-center justify-between shadow-sm">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+        <div className="bg-gray-800/90 backdrop-blur-md border-b border-gray-700 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-xl">
               {currentGroup.avatar ? (
-                <img src={currentGroup.avatar} alt={currentGroup.name} className="object-cover" />
+                <img src={currentGroup.avatar} alt="" className="w-full h-full object-cover rounded-xl" />
               ) : (
-                <Users className="w-6 h-6 text-white" />
+                <Users className="w-7 h-7 text-white" />
               )}
             </div>
             <div>
-              <h1 className="font-bold text-xl text-gray-900">{currentGroup.name}</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-xl font-bold text-white">{currentGroup.name}</h1>
+              <p className="text-sm text-gray-400">
                 {currentGroup.participants?.length || 0} members • {currentGroup.privacy} group
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <button className="p-3 hover:bg-gray-100 rounded-xl transition-all duration-200 hover:scale-105">
-              <MoreVertical className="w-5 h-5 text-gray-600" />
+          <div className="flex items-center gap-2">
+            <button className="p-3 hover:bg-gray-700 rounded-xl transition">
+              <MoreVertical className="w-5 h-5 text-gray-400" />
             </button>
             <button
               onClick={() => setShowMembers(!showMembers)}
-              className={`p-3 rounded-xl transition-all duration-200 hover:scale-105 ${
-                showMembers ? 'bg-amber-100 text-amber-700 shadow-sm' : 'hover:bg-gray-100 text-gray-600'
-              }`}
+              className={`p-3 rounded-xl transition ${showMembers ? 'bg-amber-500/20 text-amber-400' : 'hover:bg-gray-700'}`}
             >
               <Users className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-gradient-to-b from-gray-50/50 to-white/50">
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto px-6 py-8 space-y-5 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent"
+        >
           {messagesLoading ? (
-            <div className="h-full flex items-center justify-center">
-              <Loader2 className="w-10 h-10 animate-spin text-amber-600" />
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-amber-500" />
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="text-center text-gray-500 py-20">
+              <Users className="w-16 h-16 mx-auto mb-4 opacity-30" />
+              <p>No messages yet. Start the conversation!</p>
             </div>
           ) : (
             messages.map((msg) => {
-              const isMine = msg.sender?._id === userId;
+              const isMine = (msg.sender?._id || msg.sender) === userId;
               return (
-                <div
-                  key={msg._id}
-                  className={`flex items-end space-x-3 ${isMine ? 'flex-row-reverse space-x-reverse' : ''}`}
-                >
+                <div key={msg._id} className={`flex items-end gap-3 ${isMine ? 'flex-row-reverse' : ''}`}>
                   {!isMine && (
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-amber-100 flex items-center justify-center text-sm font-semibold text-amber-700">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-600 to-orange-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
                       {msg.sender?.profilePicture ? (
-                        <img
-                          src={msg.sender.profilePicture}
-                          alt={msg.sender?.fullName}
-                          className="object-cover"
-                        />
+                        <img src={msg.sender.profilePicture} alt="" className="w-full h-full object-cover rounded-full" />
                       ) : (
-                        msg.sender?.fullName?.charAt(0)?.toUpperCase()
+                        msg.sender?.fullName?.[0]?.toUpperCase()
                       )}
                     </div>
                   )}
-                  <div className={`max-w-md group ${isMine ? 'items-end' : 'items-start'} flex flex-col`}>
-                    {!isMine && (
-                      <p className="text-xs font-semibold text-gray-600 mb-1 px-1">{msg.sender?.fullName}</p>
-                    )}
+                  <div className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} max-w-xl`}>
+                    {!isMine && <p className="text-xs text-gray-400 mb-1 px-1">{msg.sender?.fullName}</p>}
                     <div
-                      className={`px-4 py-3 rounded-2xl shadow-sm transition-all duration-200 hover:shadow-md ${
+                      className={`px-5 py-3 rounded-2xl shadow-lg max-w-xs md:max-w-md break-words ${
                         isMine
-                          ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-br-md'
-                          : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md hover:border-gray-300'
+                          ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-br-none'
+                          : 'bg-gray-800 border border-gray-700 text-gray-100 rounded-bl-none'
                       }`}
                     >
-                      <p className="text-sm leading-relaxed break-words">{msg.text}</p>
-                      <p
-                        className={`text-xs mt-2 ${
-                          isMine ? 'text-amber-100' : 'text-gray-500'
-                        } opacity-75 group-hover:opacity-100 transition-opacity`}
-                      >
-                        {new Date(msg.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                      <p className="text-sm leading-relaxed">{msg.text}</p>
+                      <p className="text-xs opacity-70 mt-2">
+                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </div>
@@ -272,8 +253,8 @@ function ChatPage() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-gray-200/50">
-          <div className="flex items-center space-x-4 max-w-4xl">
+        <div className="bg-gray-800/90 backdrop-blur-md border-t border-gray-700 px-6 py-5">
+          <div className="flex items-center gap-4 max-w-5xl mx-auto">
             <div className="flex-1 relative">
               <input
                 type="text"
@@ -285,67 +266,52 @@ function ChatPage() {
                     handleSendMessage();
                   }
                 }}
-                placeholder="Type your message..."
-                className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 text-gray-800 placeholder-gray-500"
+                placeholder="Type a message..."
+                className="w-full px-6 py-4 bg-gray-700 border border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 placeholder-gray-400 text-white transition"
               />
-              <button className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-200 rounded-full transition-colors">
-                <Smile className="w-5 h-5 text-gray-500" />
+              <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-600 rounded-full transition">
+                <Smile className="w-5 h-5 text-gray-400" />
               </button>
             </div>
             <button
               onClick={handleSendMessage}
               disabled={!newMessage.trim() || sending}
-              className={`p-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl ${
+              className={`p-4 rounded-2xl transition-all shadow-lg ${
                 newMessage.trim() && !sending
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white transform hover:scale-105'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white hover:scale-105'
+                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
               }`}
             >
-              {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              {sending ? <Loader2 className="w-6 h-6 animate-spin" /> : <Send className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
       {showMembers && (
-        <div className="w-80 bg-white/90 backdrop-blur-sm border-l border-gray-200/50 shadow-xl">
-          <div className="p-6 border-b border-gray-200/50 flex items-center justify-between">
+        <div className="w-80 bg-gray-800/95 backdrop-blur-md border-l border-gray-700">
+          <div className="p-6 border-b border-gray-700 flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-lg text-gray-900">Participants</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {currentGroup.participants?.length || 0} members
-              </p>
+              <h3 className="text-lg font-bold text-white">Participants</h3>
+              <p className="text-sm text-gray-400">{currentGroup.participants?.length || 0} members</p>
             </div>
-            <button
-              onClick={() => setShowMembers(false)}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <X className="w-4 h-4 text-gray-600" />
+            <button onClick={() => setShowMembers(false)} className="p-2 hover:bg-gray-700 rounded-lg">
+              <X className="w-5 h-5 text-gray-400" />
             </button>
           </div>
-
-          <div className="p-4 space-y-3 overflow-y-auto">
-            {currentGroup.participants?.map((participant) => (
-              <div
-                key={participant.userId?._id}
-                className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-              >
-                <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-200 to-orange-300 rounded-full flex items-center justify-center text-white font-bold shadow-md overflow-hidden">
-                    {participant.userId?.profilePicture ? (
-                      <img
-                        src={participant.userId.profilePicture}
-                        alt={participant.userId.fullName}
-                        className="object-cover"
-                      />
-                    ) : (
-                      participant.userId?.fullName?.charAt(0)
-                    )}
-                  </div>
+          <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-140px)]">
+            {currentGroup.participants?.map((p) => (
+              <div key={p.userId?._id || p.userId} className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-700/50 transition">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold shadow-lg">
+                  {p.userId?.profilePicture ? (
+                    <img src={p.userId.profilePicture} alt="" className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    p.userId?.fullName?.[0]?.toUpperCase()
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">{participant.userId?.fullName}</p>
-                  <p className="text-sm text-gray-600 capitalize">{participant.role}</p>
+                <div>
+                  <p className="font-medium text-white truncate">{p.userId?.fullName}</p>
+                  <p className="text-xs text-gray-400 capitalize">{p.role || 'member'}</p>
                 </div>
               </div>
             ))}
