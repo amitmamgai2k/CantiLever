@@ -12,7 +12,7 @@ import {
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
 
-function ChattingPage() {
+function ChatPage() {
   const { id: activityId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -23,10 +23,18 @@ function ChattingPage() {
     (state) => state.chat
   );
   const { user } = useSelector((state) => state.userAuth);
+  // Ensure we handle both _id and id formats
   const userId = user?._id || user?.id;
 
   const [newMessage, setNewMessage] = useState('');
   const [showMembers, setShowMembers] = useState(true);
+
+  // Keep a ref of messages to check for duplicates inside the socket listener
+  // without re-triggering the effect
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     if (activityId) {
@@ -47,11 +55,29 @@ function ChattingPage() {
     }
   }, [currentGroup?._id, isMember, dispatch]);
 
+  // --- FIX START ---
   useEffect(() => {
     if (!socket || !currentGroup?._id || !isMember) return undefined;
 
     socket.emit('joinChatRoom', currentGroup._id);
-    const handler = (message) => dispatch(addRealtimeMessage(message));
+
+    const handler = (message) => {
+      // 1. Check if message already exists in state to prevent ANY duplicates
+      // We use the ref here so we have the latest messages without adding 'messages' to the dependency array
+      const isDuplicate = messagesRef.current?.some((m) => m._id === message._id);
+      if (isDuplicate) return;
+
+      // 2. Double check: Check if the incoming message sender is the current user.
+      const msgSenderId = message.sender?._id || message.sender;
+
+      // Convert both to strings to ensure accurate comparison (fixes Object vs String issues)
+      const isMyMessage = String(msgSenderId) === String(userId);
+
+      // Only dispatch if the sender is NOT the current user.
+      if (!isMyMessage) {
+        dispatch(addRealtimeMessage(message));
+      }
+    };
 
     socket.on('chatMessage', handler);
 
@@ -59,7 +85,8 @@ function ChattingPage() {
       socket.emit('leaveChatRoom', currentGroup._id);
       socket.off('chatMessage', handler);
     };
-  }, [socket, currentGroup?._id, isMember, dispatch]);
+  }, [socket, currentGroup?._id, isMember, dispatch, userId]);
+  // --- FIX END ---
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -70,6 +97,7 @@ function ChattingPage() {
     if (!currentGroup?._id) return;
     const text = newMessage.trim();
     setNewMessage('');
+    // This dispatch typically updates Redux with the sent message immediately or upon API success
     await dispatch(sendGroupMessage({ chatId: currentGroup._id, text }));
   };
 
@@ -328,4 +356,4 @@ function ChattingPage() {
   );
 }
 
-export default ChattingPage;
+export default ChatPage;

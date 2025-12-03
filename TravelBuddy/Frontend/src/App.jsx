@@ -22,6 +22,7 @@ import ChatPage from './pages/Activity/ChatPageofActivity';
 import ChatGroup from './pages/Chat/ChatGroup';
 import ManageActivity from './pages/Activity/ManageActivity';
 import ChattingPage from './pages/Chat/ChatPage';
+import JoinChatGroup from './pages/Chat/JoinChatGroup';
 
 
 
@@ -51,6 +52,7 @@ export default function App() {
           <Route path = "/activity-group/:id" element={<ChattingPage/>} />
 
           <Route path = "/manage-activity/:id" element={<ManageActivity />} />
+          <Route path = "/join-activity-chat-group/:id" element={<JoinChatGroup />} />
 
 
         <Route index element={

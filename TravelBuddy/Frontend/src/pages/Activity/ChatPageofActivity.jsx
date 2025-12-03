@@ -16,7 +16,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { leaveActivity } from '../../redux/slices/userActivitySlice';
 import { getSingleActivity } from '../../redux/slices/userActivitySlice';
-import toast from 'react-hot-toast';
 import CurrentLocationMap from '../../components/CurrentLocationMap';
 
 
@@ -86,7 +85,7 @@ function ChatPage() {
 
   };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-100">
+    <div className="min-h-screen bg-black">
 
 
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -121,7 +120,7 @@ function ChatPage() {
 
 
             {/* Details Section */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="bg-white rounded-2xl shadow-lg p-8 mt-4">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Activity Details</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -173,7 +172,7 @@ function ChatPage() {
             </div>
             {/* Join Chat Group*/}
             <div className="mt-4 bg-white rounded-2xl shadow-lg p-6">
-              <button onClick={()=>navigate(`/chat/${singleActivity._id}`)}  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full w-full">Join Chat Group</button>
+              <button onClick={()=>navigate(`/join-activity-chat-group/${singleActivity._id}`)}  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full w-full">Join Chat Group</button>
             </div>
 
           </div>
@@ -181,44 +180,78 @@ function ChatPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Join Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+            <div className="bg-white rounded-2xl shadow-lg p-6  top-24">
               <button onClick={() => handleLeaveActivity()} className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full w-full">
                 Leave Activity
               </button>
             </div>
 
             {/* Organizer Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Hosted by</h3>
-              <div className="flex items-center space-x-4 mb-4">
-                {singleActivity.creator?.profilePicture ? (
-                  <img
-                    src={singleActivity.creator.profilePicture}
-                    alt={singleActivity.creator.fullName}
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                    {singleActivity.creator?.fullName?.charAt(0) || 'U'}
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900">{singleActivity.creator?.fullName || 'Unknown'}</h4>
-                  <p className="text-sm text-gray-600">Activity Host</p>
-                </div>
-              </div>
-              <div className="flex space-x-2">
-                <button className="flex-1 py-2 bg-amber-100 text-amber-700 rounded-lg font-medium hover:bg-amber-200 transition-colors">
-                  <MessageCircle className="w-4 h-4 inline mr-2" />
-                  Message
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
-                  <Phone className="w-4 h-4" />
-                </button>
+             <div className="bg-white rounded-2xl shadow-lg p-6">
+  <h3 className="text-lg font-semibold text-gray-900 mb-4">Hosted by</h3>
 
-              </div>
-            </div>
-             <div className="bg-white shadow-xl rounded-3xl p-6 sm:p-8">
+  <div className="flex items-center space-x-4 mb-4">
+
+    {/* Profile Image or Initial */}
+    {singleActivity.creator?.profilePicture ? (
+      <img
+        src={singleActivity.creator.profilePicture}
+        alt={singleActivity.creator.fullName}
+        className="w-16 h-16 rounded-full object-cover"
+      />
+    ) : (
+      <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+        {singleActivity.creator?.fullName?.charAt(0) || 'U'}
+      </div>
+    )}
+
+    <div className="flex-1">
+      <h4 className="font-semibold text-gray-900">
+        {singleActivity.creator?.fullName || 'Unknown'}
+      </h4>
+      <p className="text-sm text-gray-600">Activity Host</p>
+    </div>
+  </div>
+
+  {/* Action Buttons */}
+  <div className="flex space-x-3">
+
+    {/* WhatsApp Button */}
+    <button
+      onClick={() => {
+        const phone = singleActivity.creator?.mobile || "";
+        if (phone) {
+          window.open(`https://wa.me/${phone}`, "_blank");
+        } else {
+          alert("Phone number not available");
+        }
+      }}
+      className="flex-1 flex items-center justify-center gap-2 py-2 bg-green-500 text-white rounded-lg font-medium shadow-md hover:bg-green-600 transition"
+    >
+      <MessageCircle className="w-5 h-5" />
+      WhatsApp
+    </button>
+
+    {/* Call Button */}
+    <button
+      onClick={() => {
+        const phone = singleActivity.creator?.mobile || "";
+        if (phone) {
+          window.location.href = `tel:${phone}`;
+        } else {
+          alert("Phone number not available");
+        }
+      }}
+      className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-medium shadow-md hover:bg-blue-600 transition"
+    >
+      <Phone className="w-5 h-5" />
+      Call
+    </button>
+
+  </div>
+</div>
+
+             <div className="bg-white shadow-xl rounded-3xl p-6 sm:p-8 ">
                         <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
                           <MapPin className="text-green-500" size={24} />
                           Activity Location
@@ -228,16 +261,7 @@ function ChatPage() {
                        </div>
                       </div>
 
-              <div className="flex space-x-2">
-                <button className="flex-1 py-2 bg-amber-100 text-amber-700 rounded-lg font-medium hover:bg-amber-200 transition-colors">
-                  <MessageCircle className="w-4 h-4 inline mr-2" />
-                  Message
-                </button>
-                <button className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
-                  <Phone className="w-4 h-4" />
-                </button>
 
-              </div>
             </div>
           </div>
         </div>

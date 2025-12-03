@@ -6,21 +6,19 @@ import {
   Clock,
   MessageCircle,
   Phone,
-  ArrowLeft,
-  Share2,
-  Heart,
   Loader2
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { joinActivity } from '../../redux/slices/userActivitySlice';
 import { getSingleActivity } from '../../redux/slices/userActivitySlice';
+
 function IndividualActivity() {
   const { id } = useParams();
   const [isJoined, setIsJoined] = useState(false);
   const [loading, setLoading] = useState(false);
   const { singleActivity } = useSelector((state) => state.userActivity);
-  console.log(singleActivity);
+
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -73,11 +71,13 @@ function IndividualActivity() {
   const status = getActivityStatus();
 
 
-  const handleJoinActivity = () => {
-   dispatch(joinActivity(singleActivity._id));
-   if(!isJoined){
-    setIsJoined(true);
-   }
+  const handleJoinActivity = (id) => {
+   dispatch(joinActivity(id));
+   setIsJoined(true);
+   setTimeout(() => {
+      navigate(`/activity-info/${id}`);
+   }, 1000);
+
 
 };
   return (
@@ -183,7 +183,7 @@ function IndividualActivity() {
                 </button>
               ) : (
                 <button
-                  onClick={()=>handleJoinActivity()}
+                  onClick={()=>handleJoinActivity(singleActivity._id)}
                   className={`w-full py-4 font-semibold rounded-xl transition-colors mb-4 ${
                     isJoined
                       ? 'bg-green-600 hover:bg-green-700 text-white'
