@@ -1,4 +1,4 @@
-import  { useState,useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Menu,
   X,
@@ -18,346 +18,293 @@ import {
   Settings
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch,useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import ReverseGeocode from './ReverseGeoCode';
 import { logout } from '../redux/slices/userAuthSlice';
 import toast from 'react-hot-toast';
 
+const navLinks = [
+  { name: 'Discover', path: '/', icon: Compass },
+  { name: 'Map', path: '/map', icon: MapPin },
+  { name: 'Activities', path: '/activity-near-me', icon: Calendar }
+];
+
+const baseProfileItems = (badge) => [
+  { name: 'Profile', path: '/profile', icon: User },
+  { name: 'Joined Activities', path: '/joined-activities', icon: Activity },
+  { name: 'My Activities', path: '/created-activities', icon: Calendar },
+  { name: 'Connections', path: '/connections', icon: Link },
+  { name: 'Notifications', path: '/notifications', icon: Bell, badge },
+  { name: 'Update Profile', path: '/update-profile', icon: Settings }
+];
 
 function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const profileRef = useRef(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const currentUser = useSelector((state) => state.userAuth.user);
-  console.log('Current User:', currentUser);
-
   const notificationCount = 3;
-
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-        setIsProfileMenuOpen(false);
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogin = (path) => {
-    navigate(path);
-  };
-  const handleRegister = (path) => {
-    navigate(path);
-  };
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 12);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const handleNavigation = (path) => {
+    setIsProfileOpen(false);
+    setIsMenuOpen(false);
     navigate(path);
-    setIsProfileMenuOpen(false);
   };
 
   const handleLogout = () => {
     dispatch(logout());
-    toast.success('Logout successful');
-    setIsProfileMenuOpen(false);
+    toast.success('Logged out');
+    setIsProfileOpen(false);
+    setIsMenuOpen(false);
   };
 
-  const handleDeleteAccount = () => {
+  const profileMenuItems = baseProfileItems(notificationCount);
 
-    console.log('Delete account clicked');
-    setIsProfileMenuOpen(false);
-  };
-
-  const navLinks = [
-    { name: 'Discover', path: '/', icon: Compass },
-    { name: 'Map', path: '/map', icon: MapPin },
-    { name: 'Activities', path: '/activity-near-me', icon: Calendar },
-
-  ];
-
-  const profileMenuItems = [
-    { name: 'Profile', path: '/profile', icon: User },
-    { name: 'Joined Activities', path: '/joined-activities', icon: Activity },
-    { name: 'My Activities', path: '/created-activities', icon: Calendar },
-    { name: 'Connections', path: '/connections', icon: Link },
-    { name: 'Notifications', path: '/notifications', icon: Bell, badge: notificationCount },
-    {name:'Update Profile',path:'/update-profile',icon:Settings}
-
-  ];
+ const containerClasses = [
+    'sticky top-0 z-50 transition-all duration-300',
+    isScrolled ? 'backdrop-blur-xl bg-[#050b1b]/95 shadow-lg border-b border-white/10' : 'backdrop-blur-md bg-[#050b1b]/90 border-b border-white/5'
+  ].join(' ');
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50 border-b border-gray-100">
+    <header className={containerClasses}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
-
+        <div className="flex items-center justify-between h-20">
           <button
             onClick={() => handleNavigation('/')}
-            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            className="flex items-center space-x-3 group"
           >
-            <div className="bg-amber-600 p-2 rounded-lg">
-              <Globe className="text-white" size={24} />
+            <div className="bg-gradient-to-r from-amber-400 to-rose-500 p-2.5 rounded-2xl shadow-lg shadow-amber-500/20">
+              <Globe className="text-gray-900" size={24} />
             </div>
-            <div>
-              <span className="text-xl font-bold bg-amber-600 bg-clip-text text-transparent">
-                TravelBuddy
-              </span>
-              <div className="text-xs text-gray-500 -mt-1">Find your travel buddy</div>
+            <div className="text-left">
+              <span className="text-xl font-semibold text-white tracking-wide">TravelBuddy</span>
+              <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">co-travel smarter</p>
             </div>
           </button>
 
           {currentUser && (
-            <div className="hidden lg:flex items-center space-x-1 text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
-              <MapPin size={24} className="text-amber-600" />
-             <ReverseGeocode lat = {currentUser.currentLocation.lat} lng = {currentUser.currentLocation.lng}/>
+            <div className="hidden lg:flex items-center gap-2 text-xs text-white/70 bg-white/10 rounded-full px-4 py-1.5 border border-white/10">
+              <MapPin size={16} className="text-amber-300" />
+              <ReverseGeocode
+                lat={currentUser?.currentLocation?.lat}
+                lng={currentUser?.currentLocation?.lng}
+              />
             </div>
           )}
 
-          <div className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center gap-6 text-sm">
             {navLinks.map((link) => (
               <button
                 key={link.name}
                 onClick={() => handleNavigation(link.path)}
-                className="relative flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors duration-200 group"
+                className="text-white/70 hover:text-white transition-colors flex items-center gap-2"
               >
-                <link.icon size={20} />
-                <span className="group-hover:underline underline-offset-4">{link.name}</span>
-                {link.badge && link.badge > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {link.badge}
-                  </span>
-                )}
+                <link.icon size={18} />
+                <span>{link.name}</span>
               </button>
             ))}
-
             {currentUser ? (
-              <div className="flex items-center space-x-4">
-                 <button
-              onClick={() => handleNavigation('/create-activity')}
-              className="flex items-center space-x-1 bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <Plus size={18} />
-              <span className="hidden lg:inline text-center">Create Activity</span>
-            </button>
-
-                {/* Profile Dropdown Menu */}
-                <div className="relative" ref={profileMenuRef}>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => handleNavigation('/create-activity')}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 transition shadow-lg shadow-blue-500/25"
+                >
+                  <Plus size={16} />
+                  Create Activity
+                </button>
+                <div className="relative" ref={profileRef}>
                   <button
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                    className="flex items-center space-x-2 text-gray-700 hover:text-amber-600 transition-colors p-1 rounded-lg hover:bg-gray-50"
+                    onClick={() => setIsProfileOpen((prev) => !prev)}
+                    className="flex items-center gap-2 text-white/80 hover:text-white transition"
                   >
                     <img
-                      src={currentUser.profilePicture ||'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'}
-                      alt={currentUser.name}
-                      className="w-8 h-8 rounded-full border-2 border-gray-200 hover:border-amber-600 transition-colors"
+                      src={
+                        currentUser.profilePicture ||
+                        'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'
+                      }
+                      alt={currentUser.fullName}
+                      className="w-10 h-10 rounded-full border-2 border-white/30 object-cover"
                     />
-                    <span className="hidden lg:inline">{currentUser.fullName}</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                    <span className="text-sm">{currentUser.fullName}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}
+                    />
                   </button>
 
-                  {/* Dropdown Menu */}
-                  {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                      {/* User Info Header */}
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <div className="flex items-center space-x-3">
-                          <img
-                            src={currentUser.profilePicture ||'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'}
-                            alt={currentUser.fullName}
-                            className="w-10 h-10 rounded-full border-2 border-gray-200"
-                          />
-                          <div>
-                            <p className="font-semibold text-gray-900 text-sm">{currentUser.fullName}</p>
-                            <p className="text-xs text-gray-500">View profile</p>
-                          </div>
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-[#070d1f] border border-white/10 shadow-2xl shadow-black/40 overflow-hidden">
+                      <div className="p-4 border-b border-white/5 flex items-center gap-3">
+                        <img
+                          src={
+                            currentUser.profilePicture ||
+                            'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'
+                          }
+                          alt={currentUser.fullName}
+                          className="w-12 h-12 rounded-full border border-white/20 object-cover"
+                        />
+                        <div>
+                          <p className="text-sm font-semibold text-white">{currentUser.fullName}</p>
+                          <p className="text-xs text-white/50">View profile</p>
                         </div>
                       </div>
-
-                      {profileMenuItems.map((item, index) => (
+                      <div className="py-2">
+                        {profileMenuItems.map((item) => (
+                          <button
+                            key={item.name}
+                            onClick={() => handleNavigation(item.path)}
+                            className="w-full px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              <item.icon size={16} />
+                              <span>{item.name}</span>
+                            </div>
+                            {item.badge ? (
+                              <span className="bg-rose-500 text-white text-xs rounded-full px-2 py-0.5">
+                                {item.badge}
+                              </span>
+                            ) : null}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="border-t border-white/5 py-2 space-y-2">
                         <button
-                          key={index}
-                          onClick={() => handleNavigation(item.path)}
-                          className="w-full flex items-center justify-between px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                          onClick={handleLogout}
+                          className="w-full px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 flex items-center gap-3"
                         >
-                          <div className="flex items-center space-x-3">
-                            <item.icon size={16} />
-                            <span>{item.name}</span>
-                          </div>
-                          {item.badge && item.badge > 0 && (
-                            <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                              {item.badge}
-                            </span>
-                          )}
+                          <LogOut size={16} />
+                          Logout
                         </button>
-                      ))}
-
-                      <div className="border-t border-gray-100 my-1"></div>
-
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-left"
-                      >
-                        <LogOut size={16} />
-                        <span>Logout</span>
-                      </button>
-
-                      <button
-                        onClick={handleDeleteAccount}
-                        className="w-full flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors text-left"
-                      >
-                        <Trash2 size={16} />
-                        <span>Delete Account</span>
-                      </button>
+                        <button
+                          onClick={() => {
+                            console.log('Delete account clicked');
+                            setIsProfileOpen(false);
+                          }}
+                          className="w-full px-4 py-2 text-sm text-rose-400 hover:bg-rose-500/10 flex items-center gap-3"
+                        >
+                          <Trash2 size={16} />
+                          Delete Account
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleLogin('/login')}
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
+                  onClick={() => handleNavigation('/login')}
+                  className="text-white/70 hover:text-white"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => handleRegister('/register')}
-                  className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                  onClick={() => handleNavigation('/register')}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-amber-400 to-rose-500 text-gray-900 hover:scale-105 transition shadow-lg shadow-amber-500/25"
                 >
-                  Join Now
+                  Join now
                 </button>
               </div>
             )}
-          </div>
+          </nav>
 
           <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden text-gray-700 hover:text-blue-600 p-2"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className="md:hidden text-white/80 hover:text-white"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
 
-        {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden mt-2 space-y-1 pb-4 border-t border-gray-100 pt-4">
-            {/* Current Location (Mobile) */}
+          <div className="md:hidden border-t border-white/10 py-4 space-y-2">
             {currentUser && (
-              <div className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg mx-3 mb-3">
-                <MapPin size={14} className="text-blue-500" />
-               <ReverseGeocode lat = {currentUser.currentLocation.lat} lng = {currentUser.currentLocation.lng}/>
+              <div className="flex items-center gap-2 text-xs text-white/70 bg-white/5 rounded-2xl px-4 py-2 border border-white/10">
+                <MapPin size={14} className="text-amber-300" />
+                <ReverseGeocode
+                  lat={currentUser?.currentLocation?.lat}
+                  lng={currentUser?.currentLocation?.lng}
+                />
               </div>
             )}
-
             {navLinks.map((link) => (
               <button
                 key={link.name}
-                onClick={() => {
-                  handleNavigation(link.path);
-                  setIsMenuOpen(false);
-                }}
-                className="relative flex items-center space-x-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-lg mx-3 transition-colors w-full text-left"
+                onClick={() => handleNavigation(link.path)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white/80 hover:bg-white/5 text-left"
               >
-                <link.icon size={20} />
-                <span className="font-medium">{link.name}</span>
-                {link.badge && link.badge > 0 && (
-                  <span className=" bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {link.badge}
-                  </span>
-                )}
+                <link.icon size={18} />
+                {link.name}
               </button>
             ))}
-
             <button
-              onClick={() => {
-                handleNavigation('/create-activity');
-                setIsMenuOpen(false);
-              }}
-              className="flex align-center space-x-3 px-4 py-3 mx-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 w-full"
+              onClick={() => handleNavigation('/create-activity')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20"
             >
-              <Plus size={20} />
-              <span className="font-medium text-center mt-[-1px]">Create Activity</span>
+              <Plus size={18} />
+              Create Activity
             </button>
-
             {currentUser ? (
-              <div className="space-y-1 border-t border-gray-100 mx-3 pt-2">
-                {/* Mobile Profile Menu Items */}
-                {profileMenuItems.map((item, index) => (
+              <div className="space-y-2 border-t border-white/10 pt-3">
+                {profileMenuItems.map((item) => (
                   <button
-                    key={index}
-                    onClick={() => {
-                      handleNavigation(item.path);
-                      setIsMenuOpen(false);
-                    }}
-                    className="flex items-center space-x-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-lg w-full text-left"
+                    key={item.name}
+                    onClick={() => handleNavigation(item.path)}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-white/70 hover:text-white hover:bg-white/5 rounded-2xl text-left"
                   >
-                    <item.icon size={20} />
-                    <span>{item.name}</span>
+                    <item.icon size={18} />
+                    {item.name}
                   </button>
                 ))}
-
-                {/* Notifications (Mobile) */}
-                <button className="flex items-center space-x-3 px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-lg w-full">
-                  <Bell size={20} />
-                  <span>Notifications</span>
-                  {notificationCount > 0 && (
-                    <span className=" bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center text-left">
-                      {notificationCount}
-                    </span>
-                  )}
-                </button>
-
                 <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-lg w-full"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-rose-300 hover:bg-rose-500/10 rounded-2xl"
                 >
-                  <LogOut size={20} />
-                  <span>Logout</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    handleDeleteAccount();
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center space-x-3 px-3 py-3 text-red-600 hover:bg-red-50 rounded-lg w-full"
-                >
-                  <Trash2 size={20} />
-                  <span>Delete Account</span>
+                  <LogOut size={18} />
+                  Logout
                 </button>
               </div>
             ) : (
-              <div className="space-y-2 mt-4 pt-4 border-t border-gray-100 mx-3">
+              <div className="space-y-2 border-t border-white/10 pt-3">
                 <button
-                  onClick={() => {
-                    handleLogin('/login');
-                    setIsMenuOpen(false);
-                  }}
-                  className="block px-3 py-3 text-gray-700 hover:bg-gray-50 rounded-lg font-medium w-full text-left"
+                  onClick={() => handleNavigation('/login')}
+                  className="w-full px-4 py-2 rounded-2xl bg-white/5 text-white/80"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => {
-                    handleRegister('/register');
-                    setIsMenuOpen(false);
-                  }}
-                  className="block px-3 py-30 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-200 font-medium text-center w-full"
+                  onClick={() => handleNavigation('/register')}
+                  className="w-full px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-400 to-rose-500 text-gray-900 font-medium"
                 >
-                  Join TravelConnect
+                  Join TravelBuddy
                 </button>
               </div>
             )}
           </div>
         )}
       </div>
-    </nav>
+    </header>
   );
 }
 
 export default NavBar;
+

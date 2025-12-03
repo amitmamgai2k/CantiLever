@@ -161,7 +161,7 @@ export const updateActivity = asyncHandler(async (req, res, next) => {
 export const getSingleActivity = asyncHandler(async (req, res, next) => {
     try {
         const activityId = req.params.id;
-        const activity = await Activity.findById(activityId).populate('creator', { fullName: 1 , profilePicture: 1});
+        const activity = await Activity.findById(activityId).populate('creator', { fullName: 1 , profilePicture: 1, mobile: 1});
         if (!activity) {
             return next(new ApiError(404, 'Activity not found'));
         }
@@ -198,7 +198,7 @@ export const getJoinedActivities = asyncHandler(async (req, res, next) => {
     path: 'JoinActivity',
     populate: {
       path: 'creator',
-      select: 'fullName profilePicture'
+      select: 'fullName profilePicture mobile'
     }
   });
 
