@@ -10,6 +10,9 @@ import userRoutes from './src/routes/user.route.js';
 import ActivityRoutes from './src/routes/activity.route.js';
 import MessageRoutes from './src/routes/message.route.js';
 import ChatRoutes from './src/routes/chatgroup.route.js'
+import friendRequestRoutes from './src/routes/friendRequest.route.js';
+import notificationRoutes from './src/routes/notification.route.js';
+import privateChatRoutes from './src/routes/privateChat.route.js';
 
 
 dotenv.config();
@@ -36,5 +39,8 @@ app.use('/users', userRoutes);
 app.use('/activity', ActivityRoutes);
 app.use('/messages', MessageRoutes);
 app.use('/chat', ChatRoutes);
+app.use('/friends', friendRequestRoutes);
+app.use('/notifications', notificationRoutes);
+app.use('/private-chat', privateChatRoutes);
 
 export default app;

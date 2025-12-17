@@ -25,6 +25,23 @@ export const initSocket = (server) => {
       console.log(`Socket ${socket.id} joined chat room: ${chatId}`);
     });
 
+    socket.on('joinPrivateChat', (chatId) => {
+        if (!chatId) return;
+        socket.join(`private:${chatId}`);
+        console.log(`Socket ${socket.id} joined private chat: ${chatId}`);
+    });
+
+    socket.on('leavePrivateChat', (chatId) => {
+         if(!chatId) return;
+         socket.leave(`private:${chatId}`);
+    });
+
+    socket.on('joinUserRoom', (userId) => {
+        if (!userId) return;
+        socket.join(`user:${userId}`);
+        console.log(`Socket ${socket.id} joined user room: ${userId}`);
+    });
+
     socket.on('leaveChatRoom', (chatId) => {
       if (!chatId) return;
       socket.leave(`chat:${chatId}`);

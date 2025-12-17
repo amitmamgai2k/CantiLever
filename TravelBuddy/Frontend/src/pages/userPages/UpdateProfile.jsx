@@ -10,7 +10,8 @@ import {
   Facebook,
   Linkedin,
   MapPin,
-  Calendar
+  Calendar,
+  Plus
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -139,7 +140,6 @@ function UpdateProfile() {
   };
 
   const handleSave = () => {
-    // Clean and validate data
     const cleanedData = {
       ...formData,
       interests: formData.interests.filter(item => item.trim() !== ''),
@@ -163,10 +163,7 @@ function UpdateProfile() {
     toast.success('Profile updated successfully');
     setTimeout(() => {
        navigate('/profile');
-
-
     }, 2000);
-
   };
 
   const handleCancel = () => {
@@ -175,57 +172,62 @@ function UpdateProfile() {
 
   if (!currentUser) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex justify-center items-center h-screen bg-[#030712]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-400"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="bg-yellow-50 shadow-xl rounded-3xl p-6 sm:p-8 mb-6">
-          <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-[#030712] text-white pt-24 pb-12 px-4 sm:px-6 lg:px-8">
 
-            <h1 className="text-2xl font-bold text-gray-800">Update Profile</h1>
-            <div className="flex gap-2">
-              <button
-                onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-              >
-                <Save size={16} />
-                Save
-              </button>
+       {/* Background Ambience */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-rose-500/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-blue-500/10 blur-[120px] rounded-full" />
+      </div>
+
+      <div className="max-w-3xl mx-auto relative z-10">
+
+        {/* Header Section */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 mb-8 backdrop-blur-sm shadow-2xl">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8 border-b border-white/10 pb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+              Edit Profile
+            </h1>
+            <div className="flex gap-3 w-full sm:w-auto">
               <button
                 onClick={handleCancel}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-xl transition-all border border-white/5"
               >
-                <X size={16} />
+                <X size={18} />
                 Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-400 to-rose-500 text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-amber-500/20"
+              >
+                <Save size={18} />
+                Save Changes
               </button>
             </div>
           </div>
 
-          {/* Profile Picture Section */}
-          <div className="text-center mb-8">
-            <div className="relative inline-block">
-              <img
-                src={formData.profilePicture || currentUser.profilePicture}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-              />
-              <div className="absolute inset-0 rounded-full bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                <Camera className="w-8 h-8 text-white" />
+          {/* Profile Picture */}
+          <div className="flex flex-col items-center mb-10">
+            <div className="relative group">
+              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full p-1 bg-gradient-to-br from-amber-400 to-rose-500">
+                <img
+                  src={formData.profilePicture || 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover border-4 border-[#030712] group-hover:opacity-75 transition-opacity"
+                />
               </div>
-            </div>
-            <div className="mt-4">
               <label
                 htmlFor="profile-image-upload"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors"
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 cursor-pointer transition-all duration-300"
               >
-                <Camera className="w-4 h-4 mr-2" />
-                Change Photo
+                <Camera className="w-8 h-8 text-white scale-75 group-hover:scale-100 transition-transform" />
               </label>
               <input
                 id="profile-image-upload"
@@ -235,199 +237,180 @@ function UpdateProfile() {
                 className="hidden"
               />
             </div>
+            <p className="mt-3 text-sm text-white/50">Tap to change photo</p>
           </div>
 
-          {/* Basic Info */}
+          {/* Basic Info Container */}
           <div className="space-y-6">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <User size={16} />
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+                <User size={16} className="text-amber-400" />
                 Full Name
               </label>
               <input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
-                className="w-full p-3 border border-gray-300 bg-white rounded-lg focus:border-blue-500 outline-none"
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-amber-400/50 transition-colors"
                 placeholder="Enter your full name"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700  mb-2">Bio</label>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-white/70">Bio</label>
               <textarea
                 value={formData.bio}
                 onChange={(e) => handleInputChange('bio', e.target.value)}
-                placeholder="Tell us about yourself..."
-                className="w-full p-3 border border-gray-300 bg-white rounded-lg focus:border-blue-500 outline-none resize-none"
-                rows="4"
+                placeholder="Tell the community about yourself..."
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-amber-400/50 transition-colors resize-none h-32"
               />
             </div>
           </div>
         </div>
 
-        {/* Social Links Section */}
-        <div className="bg-white shadow-xl rounded-3xl p-6 sm:p-8 mb-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Social Links</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <Instagram size={16} className="text-pink-500" />
-                Instagram
-              </label>
-              <input
-                type="text"
-                value={formData.socialLinks.instagram}
-                onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
-                placeholder="Instagram username or URL"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <Facebook size={16} className="text-blue-600" />
-                Facebook
-              </label>
-              <input
-                type="text"
-                value={formData.socialLinks.facebook}
-                onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
-                placeholder="Facebook username or URL"
-              />
-            </div>
-
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                <Linkedin size={16} className="text-blue-700" />
-                LinkedIn
-              </label>
-              <input
-                type="text"
-                value={formData.socialLinks.linkedin}
-                onChange={(e) => handleSocialLinkChange('linkedin', e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
-                placeholder="LinkedIn username or URL"
-              />
-            </div>
+        {/* Social Links */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 mb-8 backdrop-blur-sm shadow-2xl">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+            Social Connections
+          </h2>
+          <div className="space-y-5">
+            {[
+              { key: 'instagram', icon: Instagram, color: 'text-pink-500', label: 'Instagram' },
+              { key: 'facebook', icon: Facebook, color: 'text-blue-500', label: 'Facebook' },
+              { key: 'linkedin', icon: Linkedin, color: 'text-blue-400', label: 'LinkedIn' }
+            ].map((social) => (
+               <div key={social.key} className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-white/70">
+                  <social.icon size={16} className={social.color} />
+                  {social.label}
+                </label>
+                <input
+                  type="text"
+                  value={formData.socialLinks[social.key]}
+                  onChange={(e) => handleSocialLinkChange(social.key, e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-amber-400/50 transition-colors"
+                  placeholder={`${social.label} username or URL`}
+                />
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Interests Section */}
-        <div className="bg-white shadow-xl rounded-3xl p-6 sm:p-8 mb-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Heart className="text-red-500" size={20} />
+        {/* Interests */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 mb-8 backdrop-blur-sm shadow-2xl">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+            <Heart className="text-rose-500" size={20} />
             Interests
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {formData.interests.map((interest, index) => (
-              <div key={index} className="flex gap-2">
+              <div key={index} className="flex gap-3 group">
                 <input
                   type="text"
                   value={interest}
                   onChange={(e) => handleArrayChange('interests', index, e.target.value)}
-                  className="flex-1 p-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
-                  placeholder="Enter interest"
+                  className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-rose-500/50 transition-colors"
+                  placeholder="e.g. Hiking, Photography"
                 />
                 <button
                   onClick={() => removeInterest(index)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                  className="p-3 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors opacity-50 group-hover:opacity-100"
                 >
-                  <X size={16} />
+                  <X size={20} />
                 </button>
               </div>
             ))}
             <button
               onClick={addInterest}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="flex items-center gap-2 text-sm font-medium text-rose-400 hover:text-rose-300 transition-colors py-2"
             >
-              + Add Interest
+              <Plus size={16} /> Add Interest
             </button>
           </div>
         </div>
 
-        {/* Future Destinations Section */}
-        <div className="bg-white shadow-xl rounded-3xl p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Plane className="text-blue-500" size={20} />
+        {/* Future Destinations */}
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 sm:p-8 backdrop-blur-sm shadow-2xl">
+          <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+             <Plane className="text-sky-500" size={20} />
             Dream Destinations
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {formData.futureDestinations.map((destination, index) => (
-              <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-3">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-medium text-gray-700">Destination {index + 1}</h3>
-                  <button
-                    onClick={() => removeDestination(index)}
-                    className="p-1 text-red-500 hover:bg-red-50 rounded"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
+              <div key={index} className="p-6 bg-black/20 border border-white/5 rounded-2xl space-y-4 relative group hover:border-white/10 transition-colors">
+                <button
+                  onClick={() => removeDestination(index)}
+                  className="absolute top-4 right-4 p-2 text-white/30 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-all"
+                >
+                  <X size={18} />
+                </button>
 
-                <div>
-                  <label className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                    <MapPin size={14} />
+                <h3 className="text-sm font-semibold text-white/50 uppercase tracking-widest">
+                  Trip {index + 1}
+                </h3>
+
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm text-white/70">
+                    <MapPin size={14} className="text-amber-400" />
                     Destination Name
                   </label>
                   <input
                     type="text"
                     value={destination.name || ''}
                     onChange={(e) => handleDestinationChange(index, 'name', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-sky-500/50 transition-colors"
                     placeholder="e.g., Paris, France"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Latitude</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm text-white/70">Latitude</label>
                     <input
                       type="number"
                       step="any"
                       value={destination.lat || ''}
                       onChange={(e) => handleDestinationChange(index, 'lat', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-sky-500/50 transition-colors"
                       placeholder="48.8566"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm text-gray-600 mb-1">Longitude</label>
+                  <div className="space-y-2">
+                    <label className="block text-sm text-white/70">Longitude</label>
                     <input
                       type="number"
                       step="any"
                       value={destination.lng || ''}
                       onChange={(e) => handleDestinationChange(index, 'lng', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-sky-500/50 transition-colors"
                       placeholder="2.3522"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                      <Calendar size={14} />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm text-white/70">
+                      <Calendar size={14} className="text-purple-400" />
                       Start Date
                     </label>
                     <input
                       type="date"
                       value={destination.startDate ? new Date(destination.startDate).toISOString().split('T')[0] : ''}
                       onChange={(e) => handleDestinationChange(index, 'startDate', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
+                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]"
                     />
                   </div>
-                  <div>
-                    <label className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                      <Calendar size={14} />
+                  <div className="space-y-2">
+                     <label className="flex items-center gap-2 text-sm text-white/70">
+                      <Calendar size={14} className="text-purple-400" />
                       End Date
                     </label>
                     <input
                       type="date"
                       value={destination.endDate ? new Date(destination.endDate).toISOString().split('T')[0] : ''}
                       onChange={(e) => handleDestinationChange(index, 'endDate', e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 outline-none"
+                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/50 transition-colors [color-scheme:dark]"
                     />
                   </div>
                 </div>
@@ -435,12 +418,13 @@ function UpdateProfile() {
             ))}
             <button
               onClick={addDestination}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="flex items-center gap-2 text-sm font-medium text-sky-400 hover:text-sky-300 transition-colors py-2"
             >
-              + Add Destination
+              <Plus size={16} /> Add Destination
             </button>
           </div>
         </div>
+
       </div>
     </div>
   );

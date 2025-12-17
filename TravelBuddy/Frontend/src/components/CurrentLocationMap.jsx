@@ -18,7 +18,22 @@ const currentPosition = { lat, lng };
 
   if (!isLoaded) return <div>Loading map...</div>;
 
-  if (!currentPosition) return <div>Getting your location...</div>;
+  // Validate coordinates
+  const isValidLocation =
+    lat !== undefined &&
+    lat !== null &&
+    lng !== undefined &&
+    lng !== null &&
+    !isNaN(lat) &&
+    !isNaN(lng);
+
+  if (!isValidLocation) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-lg">
+        <p>Location not available</p>
+      </div>
+    );
+  }
 
   return (
     <GoogleMap

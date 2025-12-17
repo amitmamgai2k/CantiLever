@@ -23,11 +23,12 @@ const quickLinks = [
   { label: 'Live Map', icon: MapPin, path: '/map' },
   { label: 'Activities', icon: Calendar, path: '/activity-near-me' },
   { label: 'Connections', icon: Users, path: '/connections' },
-  { label: 'Messages', icon: MessageCircle, path: '/activity-group/123' }
+  { label: 'About Us', icon: Globe, path: '/about' }
 ];
 
 const supportLinks = [
   { label: 'Help Center', path: '/help' },
+  { label: 'Contact Us', path: '/contact' },
   { label: 'Safety & Trust', path: '/safety' },
   { label: 'Community Guidelines', path: '/guidelines' },
   { label: 'Partner With Us', path: '/partners' }
@@ -44,8 +45,11 @@ const socialLinks = [
   { label: 'LinkedIn', icon: Linkedin }
 ];
 
+import { useNavigate } from 'react-router-dom';
+
 function Footer() {
   const [email, setEmail] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = () => {
     if (!email.trim()) return;
@@ -54,7 +58,8 @@ function Footer() {
   };
 
   const handleNavigate = (path) => {
-    console.log('Navigate to:', path);
+    navigate(path);
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -153,10 +158,10 @@ function Footer() {
             <div className="mt-4" />
             <div className="mt-6 space-y-2 text-white/70">
               <p className="flex items-center gap-2">
-                <Mail size={14} className="text-amber-300" /> hello@travelbuddy.com
+                <Mail size={14} className="text-amber-300" /> amitmamgai2k@gmail.com
               </p>
               <p className="flex items-center gap-2">
-                <Phone size={14} className="text-amber-300" /> +1 (415) 555-9023
+                <Phone size={14} className="text-amber-300" /> +91 7011343807
               </p>
             </div>
           </div>

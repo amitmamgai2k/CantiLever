@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Send, Users, X, Smile, MoreVertical, Shield, Loader2 } from 'lucide-react';
+import { Send, Users, X, Smile, MoreVertical, Shield, Loader2, UserPlus, UserCheck, Clock } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -9,6 +9,7 @@ import {
   joinChatGroup,
   sendGroupMessage,
 } from '../../redux/slices/ChatSlice';
+import { sendFriendRequest, getFriendStatus } from '../../redux/slices/friendSlice';
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
 
@@ -24,6 +25,7 @@ function ChatPage() {
   const SCROLL_THRESHOLD = 200;
 
   const { currentGroup, messages, messagesLoading, joining, sending, loading } = useSelector((state) => state.chat);
+  const { friendStatus } = useSelector((state) => state.friend || { friendStatus: {} });
   const { user } = useSelector((state) => state.userAuth);
   const userId = user?._id || user?.id;
 
@@ -64,6 +66,18 @@ function ChatPage() {
 
     return () => container.removeEventListener('scroll', checkPosition);
   }, []);
+
+  useEffect(() => {
+    if (showMembers && currentGroup?.participants) {
+      currentGroup.participants.forEach(p => {
+        const pId = p.userId?._id || p.userId;
+        if (pId && pId !== userId && friendStatus[pId] === undefined) {
+          dispatch(getFriendStatus(pId));
+        }
+      });
+    }
+  }, [showMembers, currentGroup, userId, dispatch, friendStatus]);
+
 
   useEffect(() => {
     if (isUserNearBottom.current) {
@@ -300,21 +314,56 @@ function ChatPage() {
             </button>
           </div>
           <div className="p-4 space-y-3 overflow-y-auto h-[calc(100vh-140px)]">
-            {currentGroup.participants?.map((p) => (
-              <div key={p.userId?._id || p.userId} className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-700/50 transition">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold shadow-lg">
-                  {p.userId?.profilePicture ? (
-                    <img src={p.userId.profilePicture} alt="" className="w-full h-full object-cover rounded-full" />
-                  ) : (
-                    p.userId?.fullName?.[0]?.toUpperCase()
-                  )}
+            {currentGroup.participants?.map((p) => {
+              const pId = p.userId?._id || p.userId;
+              const isMe = String(pId) === String(userId);
+              const statusObj = friendStatus[pId];
+              const status = statusObj?.status;
+
+              return (
+              <div key={pId} className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-700/50 transition group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold shadow-lg">
+                    {p.userId?.profilePicture ? (
+                      <img src={p.userId.profilePicture} alt="" className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      p.userId?.fullName?.[0]?.toUpperCase()
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-white truncate max-w-[120px]">{p.userId?.fullName}</p>
+                    <p className="text-xs text-gray-400 capitalize">{p.role || 'member'}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-white truncate">{p.userId?.fullName}</p>
-                  <p className="text-xs text-gray-400 capitalize">{p.role || 'member'}</p>
-                </div>
+
+                {!isMe && (
+                    <button
+                      onClick={() => {
+                          if (status === 'received' && statusObj.request?._id) {
+                              dispatch(acceptFriendRequest(statusObj.request._id)).then(() => {
+                                  dispatch(getFriendStatus(pId));
+                              });
+                          } else if (status === 'none' || !status) {
+                              dispatch(sendFriendRequest(pId));
+                          }
+                      }}
+                      disabled={status === 'sent' || status === 'friends'}
+                      className={`p-2 rounded-lg transition ${
+                        status === 'friends' ? 'text-green-500 bg-green-500/10' :
+                        status === 'sent' ? 'text-amber-500 bg-amber-500/10' :
+                        status === 'received' ? 'text-blue-500 bg-blue-500/10 hover:bg-blue-500/20 hover:text-blue-400' :
+                        'text-gray-400 hover:text-white hover:bg-gray-600'
+                      }`}
+                      title={status === 'sent' ? 'Request Sent' : status === 'friends' ? 'Friends' : status === 'received' ? 'Click to Accept' : 'Connect'}
+                    >
+                       {status === 'friends' ? <UserCheck size={18} /> :
+                        status === 'sent' ? <Clock size={18} /> :
+                        status === 'received' ? <UserPlus size={18} className="rotate-180" /> :
+                        <UserPlus size={18} />}
+                    </button>
+                )}
               </div>
-            ))}
+            )})}
           </div>
         </div>
       )}

@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import ReverseGeocode from './ReverseGeoCode';
 import { logout } from '../redux/slices/userAuthSlice';
+import { fetchNotifications } from '../redux/slices/notificationSlice';
 import toast from 'react-hot-toast';
 
 const navLinks = [
@@ -47,7 +48,15 @@ function NavBar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const currentUser = useSelector((state) => state.userAuth.user);
-  const notificationCount = 3;
+  const { unreadCount } = useSelector((state) => state.notification || { unreadCount: 0 });
+
+  const notificationBadge = unreadCount > 0 ? unreadCount : null;
+
+  useEffect(() => {
+     if (currentUser) {
+        dispatch(fetchNotifications());
+     }
+  }, [currentUser, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -78,7 +87,7 @@ function NavBar() {
     setIsMenuOpen(false);
   };
 
-  const profileMenuItems = baseProfileItems(notificationCount);
+  const profileMenuItems = baseProfileItems(notificationBadge);
 
  const containerClasses = [
     'sticky top-0 z-50 transition-all duration-300',
@@ -132,6 +141,20 @@ function NavBar() {
                   <Plus size={16} />
                   Create Activity
                 </button>
+
+                {/* Notification Bell */}
+                <div className="relative">
+                   <button
+                     onClick={() => navigate('/notifications')} // Or open dropdown
+                     className="text-white/70 hover:text-white transition relative p-2"
+                   >
+                       <Bell size={20} />
+                       {unreadCount > 0 && (
+                           <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#050b1b]"></span>
+                       )}
+                   </button>
+                </div>
+
                 <div className="relative" ref={profileRef}>
                   <button
                     onClick={() => setIsProfileOpen((prev) => !prev)}

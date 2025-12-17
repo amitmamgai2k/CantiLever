@@ -23,6 +23,10 @@ import ChatGroup from './pages/Chat/ChatGroup';
 import ManageActivity from './pages/Activity/ManageActivity';
 import ChattingPage from './pages/Chat/ChatPage';
 import JoinChatGroup from './pages/Chat/JoinChatGroup';
+import NotificationPage from './pages/userPages/NotificationPage';
+import PrivateChatPage from './pages/Chat/PrivateChatPage';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
 
 
 
@@ -46,13 +50,17 @@ export default function App() {
           <Route path = "/created-activities" element={<CreatedActivites />} />
           <Route path = "/profile" element={<UserProfile />} />
           <Route path = "/connections" element={<MyConnections />} />
+          <Route path = "/notifications" element={<NotificationPage />} />
           <Route path = "/update-profile" element={<UpdateProfile />} />
           <Route path = "/activity-info/:id" element={<ChatPage />} />
           <Route path = "/chat/:id" element={<ChatGroup />} />
+          <Route path = "/private-chat/:userId" element={<PrivateChatPage />} />
           <Route path = "/activity-group/:id" element={<ChattingPage/>} />
 
           <Route path = "/manage-activity/:id" element={<ManageActivity />} />
           <Route path = "/join-activity-chat-group/:id" element={<JoinChatGroup />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
 
 
         <Route index element={
